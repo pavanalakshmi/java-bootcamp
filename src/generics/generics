@@ -1,0 +1,13 @@
+
+
+
+
+Generics -
+
+ Using objects as a parameters or array of objects.
+ Object class is the base of all reference types in java.
+ Types in java - primitive(numbers, chars, booleans) &&
+ reference types(Integer-derived from object class, .valueOf() is a static class which returns a new instance of integer class).
+
+ We have a wrapper class for every primitive type in java. - Double, Float, Character, Boolean ...
+

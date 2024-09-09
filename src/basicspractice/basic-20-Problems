@@ -1,0 +1,93 @@
+
+Problem 1: Find Maximum in Array - MaxValInArray.java
+Write a Java program to find the maximum value in an array of integers.
+
+
+Problem 2: Palindrome Check - Palindrome.java
+================================================================================================================
+Objective
+Write a Java program to check if a given string is a palindrome. A palindrome is a string that reads the same forward and backward, ignoring spaces, punctuation, and case differences.
+
+Steps to Implement Palindrome Check
+Input the string: Take a string as input from the user.
+Normalize the string: Remove non-alphanumeric characters and convert it to lower case.
+Check for palindrome:
+Compare characters from the beginning and end of the string moving towards the center.
+If all corresponding characters match, the string is a palindrome.
+Output the result: Print whether the string is a palindrome or not.
+
+================================================================================================================
+
+Problem 3:
+Create a simple calculator that can perform basic arithmetic operations (addition, subtraction, multiplication, division).
+
+Requirements:
+Use classes to model the calculator.
+Use control flow statements to handle invalid operations (e.g., division by zero).
+
+
+4,5,6,7 - OddAndEven.java
+4- Print first 50 odd numbers
+5 Print first 50 even numbers
+6 Add the first 50 even numbers and print the sum
+7 Add the first 50 odd numbers and print the sum
+
+
+8 Calculate the factorial of number n (1 >> n <= 12) Factorial.java
+
+9 Print the first n number in the fibonacci series ( 1 >> n << 100)  -- Fibonacci.java
+================================================================================================================
+For Fibonacci series.
+
+Here’s a simple explanation of how to generate the Fibonacci series for a number:
+
+Start with the first two numbers of the series, which are 0 and 1.
+To get the next number in the series, add the two previous numbers together.
+Keep adding the last two numbers to get the next number, and continue this process.
+Let's generate the first 8 numbers in the Fibonacci series as an example:
+
+Start with 0 and 1.
+0 + 1 = 1 (So the series is now: 0, 1, 1)
+1 + 1 = 2 (So the series is now: 0, 1, 1, 2)
+1 + 2 = 3 (So the series is now: 0, 1, 1, 2, 3)
+2 + 3 = 5 (So the series is now: 0, 1, 1, 2, 3, 5)
+3 + 5 = 8 (So the series is now: 0, 1, 1, 2, 3, 5, 8)
+5 + 8 = 13 (So the series is now: 0, 1, 1, 2, 3, 5, 8, 13)
+And you can keep going as long as you want.
+
+In summary, to generate the Fibonacci series:
+
+Start with 0 and 1.
+Add the last two numbers to get the next number in the series.
+Repeat the process to get as many numbers in the series as you need.
+
+================================================================================================================
+
+10 Reverse a string without using the inbuilt functions provided by the language -- ReverseString.java
+11 Check if the given string is palindrome or not - done already - repeated
+12 Read a given string and count how many times a given alphabet or number is repeated  -- CountAlphaNumber.java
+13 Find first duplicate in an array of numbers - FindFirstDuplicate.java
+
+Sum.java
+14 Sum all the numbers in array
+15 Sum only the Odd or Even Numbers in array
+
+AddSubtractWithoutOperators.java
+16.Add two numbers without directly adding them
+17.Subtract two numbers without directly subtracting it
+
+18.Given an input numbers list down all the possible factor's for it - Factors.java
+
+
+
+
+
+
+
+
+
+
+
+
+
+

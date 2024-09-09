@@ -1,0 +1,17 @@
+
+Find the Duplicate Elements in an Array
+Objective: Write a method that finds and returns any duplicate elements in an array.
+Requirements:
+The method findDuplicates(int[] array) should return an array of duplicates found in the
+input array.
+Example Usage:
+findDuplicates(new int[]{1, 2, 3, 2, 4, 3}) should return [2, 3] .
+findDuplicates(new int[]{5, 5, 5, 5}) should return [5] .
+Hints:
+Use nested loops to compare each element with every other element
+
+
+ArrayDuplicates.java
+
+
+
