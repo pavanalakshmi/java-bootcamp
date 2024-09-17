@@ -1,4 +1,4 @@
-package generics;
+package generics.practice;
 /** Notes--
  we can only store integers in this list, we cant store objects; so creating a new user_list.
  the current code has a lot of duplication in user, userlist classes(for add and get methods).

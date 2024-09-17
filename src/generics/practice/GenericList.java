@@ -1,4 +1,4 @@
-package generics;
+package generics.practice;
 /** T- for type, we can use any letter
  E- to implement a class whioch acts as a collection, so we can store many elements.
  So, T is a type parameter for this class, just like methods have parameters, classes also have parameters.
