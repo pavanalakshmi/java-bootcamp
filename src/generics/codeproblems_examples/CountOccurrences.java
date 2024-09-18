@@ -1,4 +1,4 @@
-package generics.codeproblems;
+package generics.codeproblems_examples;
 
 //Write a generic method countOccurrences that counts the number of times a specific element appears in an array.
 // The method should work with an array of any type.

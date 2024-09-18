@@ -1,4 +1,4 @@
-package generics.codeproblems;
+package generics.codeproblems_examples;
 
 public class GradeBookRunner {
     public static void main(String[] args) {

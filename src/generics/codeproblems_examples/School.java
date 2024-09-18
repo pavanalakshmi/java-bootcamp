@@ -1,4 +1,4 @@
-package generics.codeproblems;
+package generics.codeproblems_examples;
 
 import java.util.*;
 
