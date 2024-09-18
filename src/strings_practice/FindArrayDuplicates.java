@@ -2,9 +2,9 @@ package strings_practice;
 
 import java.util.Arrays;
 
-public class ArrayDuplicates {
+public class FindArrayDuplicates {
     public static void main(String[] args) {
-        ArrayDuplicates arrayDuplicates = new ArrayDuplicates();
+        FindArrayDuplicates arrayDuplicates = new FindArrayDuplicates();
         System.out.println(Arrays.toString(arrayDuplicates.findDuplicates(new int[]{1,2,2,3,2,4,3})));
 //        String o = Arrays.toString(arrayDuplicates.findDuplicates(new int[]{1,2,3,2,4,3}));
     }

@@ -1,21 +1,18 @@
 package strings_practice;
 
-public class CountVowels {
+public class RemoveVowels {
     public static void main(String[] args) {
-        System.out.println(countVowels("Hello World"));
-        System.out.println(countVowels("Java Programming"));
-        System.out.println(countVowels("AeiOu"));
-        System.out.println(countVowels(""));
+        System.out.println(removeVowels("Hello World"));
+        System.out.println(removeVowels("Java Programming"));
     }
-
-    public static int countVowels(String input){
-        int count = 0;
+    public static String removeVowels(String input){
+        String output = "";
         for(String s: input.split("")){
-            if(isVowel(s)){
-                count++;
+            if(!isVowel(s)){
+                output+=s;
             }
         }
-        return count;
+        return output;
     }
 
     public static boolean isVowel(String str){

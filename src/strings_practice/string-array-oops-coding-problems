@@ -1,4 +1,44 @@
 
+
+Problem: Count the Vowels in a StringObjective:Write a Java program that counts the number of vowels in a given string.Requirements:The program should define a method countVowels(String input) that takes a string as input andreturns the number of vowels (a, e, i, o, u) in the string.The method should be case-insensitive, meaning it should count both uppercase and lowercasevowels (e.g., 'A' and 'a').The program should also handle an empty string input by returning 0.Example Usage:countVowels("Hello World") should return 3 .countVowels("Java Programming") should return 5 .countVowels("Aeiou") should return 5 .countVowels("") should return 0 .
+
+
+
+
+Remove Vowels from a StringObjective: Write a method that removes all vowels from a given string.Requirements:The method removeVowels(String input) should return the string without any vowels.Example Usage:removeVowels("Hello World") should return "Hll Wrld" .removeVowels("Java Programming") should return "Jv Prgrmmng" .Hints:Use a loop to iterate through the string and build a new string that excludes vowels.
+
+
+
+
+
+Find the Longest Word in a StringObjective: Write a method that finds and returns the longest word in a string.Requirements:The method findLongestWord(String input) should return the longest word in the string.If there are multiple words of the same length, return the first one.Example Usage:findLongestWord("I love programming in Java") should return "programming" .findLongestWord("The quick brown fox jumps over the lazy dog") should return "jumps" .Hints:Use the split(" ") method to split the string into words and then iterate through to find thelongest one.
+
+
+
+
+
+
+
+
+Capitalize the First Letter of Each WordObjective: Write a method that capitalizes the first letter of each word in a string.Requirements:The method capitalizeWords(String input) should return the string with each word's firstletter capitalized.Example Usage:capitalizeWords("hello world") should return "Hello World" .capitalizeWords("java programming language") should return "Java ProgrammingLanguage" .Hints:Split the string into words, capitalize each word, and then join them back together.
+
+
+
+
+
+Array problemsCheck if an Array is SortedObjective: Write a method that checks if an array is sorted in ascending order.Requirements:The method isSorted(int[] array) should return true if the array is sorted and falseotherwise.Example Usage:isSorted(new int[]{1, 2, 3, 4}) should return true .isSorted(new int[]{4, 3, 2, 1}) should return false .Hints:Compare each element with the next one to ensure the order is non-decreasing.
+
+
+
+
+
+Merge Two ArraysObjective: Write a method that merges two arrays into one.Requirements:The method mergeArrays(int[] array1, int[] array2) should return a new array containingall elements of array1 followed by all elements of array2 .Example Usage:mergeArrays(new int[]{1, 2}, new int[]{3, 4}) should return [1, 2, 3, 4] .mergeArrays(new int[]{10, 20}, new int[]{30}) should return [10, 20, 30] .Hints:Create a new array of the combined length and copy elements from both arrays into it.
+
+
+
+
+
+
 Find the Duplicate Elements in an Array
 Objective: Write a method that finds and returns any duplicate elements in an array.
 Requirements:
@@ -12,6 +52,50 @@ Use nested loops to compare each element with every other element
 
 
 ArrayDuplicates.java
+
+
+
+
+
+
+Shift Elements in an ArrayObjective: Write a method that shifts all elements of an array to the right by a specified number ofpositions.Requirements:The method shiftArray(int[] array, int positions) should shift the array elements andhandle wrap-around.Example Usage:shiftArray(new int[]{1, 2, 3, 4}, 2) should modify the array to [3, 4, 1, 2] .shiftArray(new int[]{10, 20, 30}, 1) should modify the array to [30, 10, 20] .Hints:Consider how to handle the wrap-around when shifting elements.
+
+
+
+
+
+
+
+Find the Smallest and Largest Elements in an ArrayObjective: Write a method that finds both the smallest and largest elements in an array.Requirements:The method findMinMax(int[] array) should return an array where the first element is thesmallest and the second element is the largest.Example Usage:findMinMax(new int[]{1, 2, 3, 4, 5}) should return [1, 5] .findMinMax(new int[]{10, -3, 7, 2}) should return [-3, 10] .Hints:Iterate through the array, keeping track of the smallest and largest values encountered.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
