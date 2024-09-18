@@ -1,4 +1,4 @@
-package generics.codeproblems_examples;
+package generics.codeproblems;
 
 public class CourseRunner {
     public static void main(String[] args) {
