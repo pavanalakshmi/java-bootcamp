@@ -26,6 +26,10 @@ public class Course <S, G extends Number> {
         }
     }
 
+    public Optional<G> retrieveGrade(S studentId) {
+        return Optional.of(studentToGradeMap.get(studentId));
+    }
+
     public Optional<G> getGrade(S studentId){
         if(studentToGradeMap.containsKey(studentId)){
             return Optional.of(studentToGradeMap.get(studentId));
@@ -39,6 +43,10 @@ public class Course <S, G extends Number> {
     }
 
     public Map<S, G> listAllGrades(){
+        return new HashMap<>(studentToGradeMap);
+    }
+
+    public Map<S, G> getAllGrades() {
         return new HashMap<>(studentToGradeMap);
     }
 
