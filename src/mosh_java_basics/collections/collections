@@ -1,0 +1,54 @@
+collections framework
+Iterable interface
+            Collection Interface
+|                    |                    |
+List Interface  Queue Interface     Set Interface
+ArrayList       PriorityQueue       HashSet (all 3 classes which implements above interfaces)
+LinkedList
+
+
+Iterable interface -- represents an object which can be used in for-each loop.
+Collection - extends interface and adds additional functionality;
+It represents an object which acts as a container and collection of objects.
+Operations - add an object to collection, remove, check if exists
+
+List, Queue, Set are 3 sub-interfaces of Collections interface.
+inherits all capabilities of collections and adds-
+List - allows us to work with ordered collection and access objects using index.
+
+ArrayList - implementation of dynamic arrays - internally uses arrays to store objects;
+if array gets full, it automatically resizes.
+
+LinkedList - based on LL data structure.
+
+
+Queue - works with queue of objects, a resource which can be used with diff objects
+ex., printer can do many jobs, but not at a time, only after one by one.
+
+Set - implements collection without duplicates.
+
+
+Need for iterables -- part of java.lang package
+if we don't know the overlying implementation of a list if its a array or arraylist, and to avoid errors we can use iterables,
+as we don't need to access the array values using indices[].
+array - []
+arraylist - get()
+if we accesses using [], and in the future the implementation changes to arraylist,
+all the other methods which implemented it, gets an error in future.
+To avoid these errors, we use iterables.
+
+
+iterables interface -> represents an object which is iterable, we can iterate over it without knowing its implementation.
+Iterator is used to iterate over an iterable.
+
+
+Collection interface ->
+It represents an object which acts as a container and collection of objects.
+add()
+remove()
+contains()
+
+
+The List interface -> represents ordered collection/sequence.
+We can access objects by their index.
+

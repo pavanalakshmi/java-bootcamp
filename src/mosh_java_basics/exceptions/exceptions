@@ -1,0 +1,35 @@
+Exception Handler
+
+
+3 Types of exceptions
+Checked - we should anticipate and handle properly (FileNotFound etc); checked at runtime.
+Unchecked/Runtime - not checked by compiler at compile time - NullPointerException
+examples -- Arithmetic(division by 0), IllegalArgumentException, IndexOutOfBound, IllegalStateException(method state is not in correct state)
+// can be prevented using Automated testing.
+Error - error external for applications, - StackOverFlow error, OutOfMemoryError -> we cant do anything here.
+can happen because of programming errors - infinite recursions or problem in JVM itself.
+
+Exceptions Hierarchy --
+Throwable class - defines common characteristics for all exceptions and errors - error msg, stack trace.
+Exception(parent for all checked and unchecked exceptions), Error(errors external to application - out of memory error)
+RuntimeException/Unchecked or else its checked.
+
+docs.oracle.com documentation
+java.lang.Object
+Throwable
+Exception
+Runtime
+NullPointer
+
+How to handle exceptions-
+
+Catching multiple types of exceptions-
+only one catch will be executed, others will get ignored.
+Sometimes order of catch blocks matters,
+example, FileNotFound comes under IOException, if we declare IO first and FileNotFound later, it says we don't need it.
+This is Polymorphism principle.
+
+
+Finally Block --
+
+
