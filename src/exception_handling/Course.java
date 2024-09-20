@@ -33,7 +33,6 @@ public class Course<S,G extends Number> {
         studentGrades = new HashMap<>();
     }
 
-
     // enroll student
     public void enrollStudent(S studentId) throws StudentAlreadyEnrolledException {
         if(studentGrades.containsKey(studentId)){
