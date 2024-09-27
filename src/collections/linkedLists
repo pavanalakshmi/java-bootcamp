@@ -1,0 +1,17 @@
+
+Linked list - data structure
+Types-
+Single linked list - basic and 1st type - navigation is forward only, we cant go backwards.
+Doubly Linked list - forward and backward navigation is possible.
+circular linked list - last element is linked to the first element.
+
+Single linked list - is a list made of nodes which contain 2 parts - Data and Link
+Data contains actual data
+Link contains address of next node of the list.
+Representation --
+First node contains address of 2nd node of last; last node has address as null.
+
+To access the first node of LL -> using Head pointer.
+
+
+
