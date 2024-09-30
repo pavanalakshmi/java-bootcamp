@@ -7,8 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class TickerValidator {
-    public static boolean isValidTickerSymbol(String symbol) throws SQLException {
+public class TickerValidator implements exception_handling.trading.interfaces.TickerValidator {
+    public boolean isValidTickerSymbol(String symbol) throws SQLException {
         try (Connection connection = DbConnection.getConnection()) {
             String selectSQL = "SELECT symbol FROM SecuritiesReference where symbol = ?";
 //            String selectSQL = "SELECT 1 FROM SecuritiesReference where symbol = ?";

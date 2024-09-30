@@ -401,7 +401,7 @@ public class RawCopy {
  try (BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
  FileWriter errorLog = new FileWriter(ERROR_LOG_PATH, true)) {
 
- readFile(fileReader, connection, errorLog);
+ tradeFileWriter(fileReader, connection, errorLog);
  connection.commit();
  System.out.println("Trade data has been inserted successfully.");
 
@@ -423,7 +423,7 @@ public class RawCopy {
  }
  }
 
- public void readFile(BufferedReader fileReader, Connection connection, FileWriter errorLog) {
+ public void tradeFileWriter(BufferedReader fileReader, Connection connection, FileWriter errorLog) {
  String line;
  int totalRows = 0;
  int errorCount = 0;

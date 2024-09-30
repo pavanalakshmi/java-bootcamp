@@ -12,8 +12,8 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class Main {
-    public static String filePath = "/Users/akm/pavani/JavaBootcamp/trades_sample_1000.csv";
-    public static String securitiesFilePath = "/Users/akm/pavani/JavaBootcamp/securitiesReference.csv";
+    public static String filePath = "/Users/akm/pavani/JavaBootcamp/resources/trades_sample_1000.csv";
+    public static String securitiesFilePath = "/Users/akm/pavani/JavaBootcamp/resources/securitiesReference.csv";
     public static double errorThreshold = 0.25;
     public static final int batchSize = 100; // insert after 100 rows
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -36,8 +36,10 @@ public class Main {
             loadFromConfigProperties();
             loadFileFromUserInput();
             loadThresholdFromUserInput();
+
             SecuritiesReader securitiesReaderProcessor = new SecuritiesReader();
             securitiesReaderProcessor.readSecurities();
+
             TradeFileReader tradeFileReaderAndProcessor = new TradeFileReader();
             tradeFileReaderAndProcessor.readTradeDataFromCSV(filePath);
         } catch (Exception e) {
@@ -47,7 +49,7 @@ public class Main {
 
     public static void loadFromConfigProperties() {
         Properties properties = new Properties();
-        try (InputStream input = new FileInputStream("trade.properties")) {
+        try (InputStream input = new FileInputStream("/Users/akm/pavani/JavaBootcamp/resources/trade.properties")) {
             properties.load(input);
             filePath = properties.getProperty("file.path");
             try {
@@ -69,16 +71,16 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         while(true){
             System.out.print("Enter file path: "+ "(press Enter to use default file or type 'x' to exit): ");
-            String inputfilePath = scanner.nextLine();
-            if(inputfilePath.isEmpty()){
+            String inputFilePath = scanner.nextLine();
+            if(inputFilePath.isEmpty()){
                 break;
             }
-            if(inputfilePath.trim().equalsIgnoreCase("x")){
+            if(inputFilePath.trim().equalsIgnoreCase("x")){
                 System.out.println("Exiting the program...");
                 System.exit(0);
             }
-            if(inputfilePath.contains(".csv")){
-                filePath = inputfilePath;
+            if(inputFilePath.contains(".csv")){
+                filePath = inputFilePath;
                 break;
             } else {
                 System.out.println("Invalid file path. Provide a valid csv file");
@@ -118,7 +120,7 @@ public class Main {
         }
     }
 
-    public static int executeBatch(PreparedStatement insertStatement, Connection connection) throws SQLException, HitInsertErrorsThresholdException {
+    public int executeBatch(PreparedStatement insertStatement, Connection connection) throws SQLException, HitInsertErrorsThresholdException {
         try {
             int[] results = insertStatement.executeBatch();
             int batchInsertErrors = 0;
