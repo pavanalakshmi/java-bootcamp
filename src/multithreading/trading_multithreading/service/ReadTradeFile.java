@@ -7,12 +7,12 @@ import java.util.Properties;
 
 public class ReadTradeFile {
     public int chunksCount;
-    ChunkGenerator chunkGenerator;
+    ChunkGeneratorService chunkGenerator;
     List<String> chunkFileNames;
 
     public ReadTradeFile( ) {
         chunksCount = loadChunkSizeFromConfigProperties();
-        chunkGenerator = new ChunkGenerator();
+        chunkGenerator = new ChunkGeneratorService();
     }
 
     public List<String> readCSVGenerateChunks (String filePath) {

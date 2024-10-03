@@ -1,13 +1,11 @@
 package multithreading.trading_multithreading.service;
 
-import multithreading.trading_multithreading.interfaces.TradeDistributionMapInterface;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TradeDistributorMap implements TradeDistributionMapInterface {
+public class TradeDistributorMapService implements TradeDistributionMap {
     static ConcurrentHashMap<String, String> tradeMap;
 //    private Random random;
     private int queueIndex;
@@ -16,7 +14,7 @@ public class TradeDistributorMap implements TradeDistributionMapInterface {
         return tradeMap;
     }
 
-    public TradeDistributorMap() {
+    public TradeDistributorMapService() {
         tradeMap = new ConcurrentHashMap<>();
 //        random = new Random();
         queueIndex=0; //Initialize the index for round-robin assignment

@@ -1,0 +1,443 @@
+
+
+
+iTerm2->
+Also follow this link to setup your COOL iTerm terminal with important plugins. Follow all the way to the end. and let us know if you need help anywhere..   we will be spending more time on Terminal .. so this link will bring it on Steroids...freeCodeCamp.org
+Jazz Up Your “ZSH” Terminal In Seven Steps — A Visual Guide
+https://www.freecodecamp.org/news/jazz-up-your-zsh-terminal-in-seven-steps-a-visual-guide-e81a8fd59a38
+--> Installed iTerm2, Homebrew (/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)")
+
+
+---------------------------
+
+JDBC
+brew install --cask docker
+if you dont have brew then type this --> /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Docker - is a container which acts as a virtualization tool for using softwares without installing them in local machine.
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=password123 -p 3306:3306 bitnami/mysql:latest
+
+Oracle SQL Developer Downloads - https://www.oracle.com/database/sqldeveloper/technologies/download/
+https://dev.mysql.com/downloads/connector/j/ -> platform-independent; Open jar file inside folder and include it in idea project
+File-> project structure -> libraries-> java-> add jar and apply
+SQL developer-> oracle sql developer-> settings - database - third party JDBC drivers - add jar file
+
+
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=password123 -p 3307:3306 bitnami/mysql:latest
+// mysql -u root -p -h 127.0.0.1 -P 3307
+
+
+Open Oracle SQL Developer.
+Click on the green + icon in the Connections panel to create a new connection.
+MySQL
+In the New / Select Database Connection dialog, do the following:
+Connection Name: Enter a name for your connection (e.g., MySQL-Docker).
+Username: root
+Password: password123
+Connection Type: Select Basic.
+Hostname: Enter 127.0.0.1 (since the Docker container is accessible on your local machine).
+Port: Enter 3306 (the default MySQL port, unless you've configured it differently). - 3307
+Service Name: Leave this blank or enter the name of the database you want to connect to.
+Test
+Connect
+
+
+
+Use bootcamp;
+
+CREATE TABLE Courses (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE Students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Enrollments (
+    enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    student_id INT NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id),
+FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+CREATE TABLE Grades (
+    grade_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    student_id INT NOT NULL,
+    grade DECIMAL(5, 2) NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+
+select * from Courses;
+select * from Students;
+select * from Enrollments;
+select * from Grades;
+
+
+----------------------
+
+
+Statement--
+The Statement class allows you to execute SQL instructions using three key methods:
+Executequery
+Executeupdate
+Execute - for both --> getUpdateCount
+
+Resultset
+After executing a query, the result is represented by a ResultSet object, which has a structure similar to a table, with rows and columns.
+ResultSet Interface --The ResultSet uses the next() method to move to the next row.
+
+
+PreparedStatement--
+PreparedStatement objects contain precompiled SQL sequences. They can have one or more parameters denoted by a question mark (?).
+
+Statement will be used for executing static SQL statements and it can't accept input parameters. PreparedStatement will be used for executing SQL statements many times dynamically. It will accept input parameters.
+
+
+Callable Statement--
+Calls stored procedures - prepare call
+
+
+
+
+Batch processing--
+Create statement; add batch; execute batch
+Add multiple queries to a batch using addBatch() and execute them using executeBatch(). It returns an int array indicating how many records were affected.
+
+
+
+
+
+Connection Pooling?
+
+Connection pooling is a technique used to improve the performance of database-driven applications by reusing existing database connections instead of opening and closing them frequently. This is especially beneficial in high-traffic applications where frequent opening and closing of connections can cause performance issues.
+In connection pooling, a "pool" of open connections is maintained and managed. When the application needs to communicate with the database, instead of creating a new connection, it borrows one from the pool. Once the task is done, the connection is returned to the pool, making it available for reuse.
+..
+Using connection pooling in Java with JDBC helps manage database connections more efficiently, especially in high-load applications. The common approach is to use a connection pool provided by libraries like HikariCP, Apache DBCP, or C3P0.
+Performance: Reusing connections avoids the overhead of establishing a new connection every time a database request is made.
+Efficient Resource Utilization: It helps manage the number of concurrent connections, avoiding issues like exceeding the maximum allowed connections on the database server.
+Scalability: Manages a large number of concurrent connections efficiently.
+
+1. Add HikariCP to Your Project - Maven dependency
+2. Configure HikariCP
+
+
+JDBC with Transactions in MySQL:
+JDBC (Java Database Connectivity) provides mechanisms for transaction management when working with relational databases like MySQL. 
+
+Transaction --
+A transaction in SQL is a sequence of one or more SQL operations (e.g., SELECT, INSERT, UPDATE, or DELETE) executed as a single logical unit of work. A transaction ensures data consistency and integrity by adhering to the following ACID properties:
+Atomicity: All operations in the transaction must succeed or fail as a whole. If one part fails, the entire transaction is rolled back, undoing any partial changes.
+Consistency: The database moves from one consistent state to another after a transaction.
+Isolation: Transactions should not affect each other. One transaction’s changes must be isolated from others until it is complete.
+Durability: Once a transaction is committed, its results are permanent and survive even if the system crashes.
+
+
+Transaction Control Statements in SQL --
+START TRANSACTION or BEGIN: Marks the start of a transaction.
+COMMIT: Saves all changes made during the transaction.
+ROLLBACK: Undoes all changes made during the transaction.
+SAVEPOINT: Sets a point in the transaction to which you can roll back.
+RELEASE SAVEPOINT: Removes a savepoint.
+
+Disable auto-commit mode (setAutoCommit(false)) - when using transactions
+
+
+
+
+Batching is designed to optimize operations that modify data (inserts, updates, deletes) by reducing the number of round-trips to the database and grouping multiple operations into a single request.
+These operations benefit from batching because they typically don't require immediate feedback on each individual operation.
+Why Not Batch SELECT Statements:---
+SELECT Statements Return Results: Unlike insert, update, or delete, a SELECT statement returns a result set, which must be processed row by row. Because each SELECT produces a different result set, it's not possible to batch multiple SELECT statements together in a way that efficiently handles these results in one go.
+
+
+Alternative for SELECT Optimization: Batch Processing of Results---
+Fetching Large Result Sets in Batches:
+You can fetch large data sets in smaller chunks using setFetchSize() to limit the number of rows retrieved in one go. This prevents loading the entire result set into memory at once, which can improve performance when handling large queries.
+preparedStatement.setFetchSize(100);  // Fetch 100 rows at a time
+
+Pagination:
+If you need to retrieve large amounts of data from a SELECT statement, you can use pagination (e.g., LIMIT in SQL) to fetch results in smaller chunks.
+String query = "SELECT * FROM employees LIMIT ? OFFSET ?";
+preparedStatement = connection.prepareStatement(query);
+preparedStatement.setInt(1, 100); // Limit the number of rows to fetch
+preparedStatement.setInt(2, 0);   // Offset to start fetching - from where to start
+...
+Batching is primarily for insert, update, and delete operations in JDBC to optimize performance by reducing round-trips to the database and allowing the database to process multiple modifications at once.
+SELECT statements are not batched because they return result sets, and managing multiple result sets within a single batch would complicate result handling. Instead, optimization techniques like setting fetch sizes or using pagination are applied to handle large query results efficiently.
+
+
+
+
+
+Transaction Isolation Levels in MySQL -----
+
+When working with transactions, you can specify the isolation level to control how transactions interact with one another.
+Transaction isolation levels in JDBC specify how transactions interact with each other, particularly with regard to visibility of changes made in one transaction to others. JDBC supports four standard isolation levels that map to the SQL standard:
+
+
+Dirty reads: Occur when a transaction reads data that has been modified by another transaction but not yet committed. If the modifying transaction rolls back, the data read by the first transaction becomes invalid (hence, "dirty").
+Non-repeatable reads: Happen when a transaction reads the same data multiple times and finds different results because another transaction has modified and committed the data in between these reads.
+Phantom reads: Occur when a transaction reads a set of rows that satisfy a condition, but another transaction inserts, updates, or deletes rows during the execution of the first transaction, leading to different results if the query is repeated.
+
+
+MySQL supports the following isolation levels:
+READ UNCOMMITTED: Transactions can read uncommitted data (dirty reads).
+The lowest level of isolation. A transaction can see uncommitted changes made by other transactions, leading to potential issues like dirty reads.
+
+READ COMMITTED: Transactions can only read committed data. (Default in many databases, but not MySQL.)
+A transaction can only see committed changes from other transactions, preventing dirty reads, but non-repeatable reads and phantom reads may still occur.
+
+REPEATABLE READ: Ensures that if a transaction reads a row twice, the same value will be returned. This is MySQL's default isolation level.
+However, phantom reads (new rows being added by other transactions) can still occur.
+
+SERIALIZABLE: The highest isolation level. Transactions are executed sequentially, preventing any concurrency issues.
+It ensures that transactions are completely isolated from each other, preventing dirty reads, non-repeatable reads, and phantom reads.
+
+
+You can set the isolation level in JDBC like this:
+connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+Or via SQL in MySQL:
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+
+
+
+Transaction propagation levels determine how transactions behave when a method with an existing transaction calls another method that starts a new transaction. In the context of Spring or Java EE frameworks that provide declarative transaction management (e.g., using @Transactional annotation in Spring), different propagation levels define the interaction between the current and the newly created transactions.
+
+Here are the transaction propagation levels in Spring:
+
+REQUIRED:
+If a transaction already exists, the method joins it.
+If there’s no existing transaction, a new one is created.
+This is the default behavior.
+
+REQUIRES_NEW:
+Always creates a new transaction, suspending the existing one (if any).
+The new transaction runs independently of the original one, so changes in one transaction don't affect the other.
+
+SUPPORTS:
+If a transaction exists, the method joins it.
+If no transaction exists, the method runs without one.
+It neither forces the creation of a new transaction nor suspends any existing ones.
+
+NOT_SUPPORTED:
+The method does not execute within a transaction.
+If an existing transaction is running, it gets suspended for the duration of this method.
+
+MANDATORY:
+Requires an existing transaction to be present.
+If no transaction is found, an exception is thrown (TransactionRequiredException).
+
+NEVER:
+The method must not be called within a transaction.
+If an existing transaction is found, an exception is thrown (IllegalTransactionStateException).
+
+NESTED:
+If a transaction exists, it creates a new nested transaction within the existing one.
+If there’s no existing transaction, it behaves like REQUIRED.
+Nested transactions allow for committing or rolling back the inner transaction without affecting the outer transaction.
+
+
+
+-------------------------------------------------------  Optimistic and pessimistic locking  -----------------------------
+
+Optimistic and pessimistic locking are concurrency control mechanisms that deal with how data is accessed and modified by multiple transactions in a database. These mechanisms are often used to prevent data inconsistencies in concurrent environments, especially in scenarios where multiple users or processes are interacting with the same data. These concepts are related to transaction isolation levels because both deal with concurrency, but they are different strategies for managing it.
+
+Optimistic and Pessimistic Locking: Directly control how locks are managed on database records during a transaction to avoid conflicting updates.
+
+Optimistic Locking:
+Assumes conflicts are rare.
+Does not lock the data when reading it. Instead, it checks for conflicts only at the time of committing the transaction.
+This is typically implemented using versioning or timestamps on rows.
+Relationship to Isolation Levels: Optimistic locking works well with lower isolation levels like READ COMMITTED or REPEATABLE READ, as it prevents lost updates through explicit checks rather than relying on stricter isolation mechanisms.
+Example: Even if a transaction reads data with READ COMMITTED isolation level, it won’t lock the row for others. But, during the commit, optimistic locking will check if the row has been updated since it was read (e.g., via a version number), and if so, it will throw an exception (like OptimisticLockException) to force the transaction to retry.
+
+Pessimistic Locking:
+Assumes conflicts are likely and prevents them by locking data immediately when it is accessed.
+Locks the data when it is read (in some cases), preventing other transactions from reading or modifying the same data until the lock is released (until the transaction completes).
+Relationship to Isolation Levels: Pessimistic locking is often used when you want to explicitly lock rows and prevent others from accessing them. This can be more restrictive than any transaction isolation level and may work with any isolation level, but is commonly used with READ COMMITTED or REPEATABLE READ. It is also useful when higher isolation levels like SERIALIZABLE are too costly.
+Example: In REPEATABLE READ or READ COMMITTED, if a transaction reads a record with pessimistic locking, it locks the record for updates or reads by other transactions until the transaction completes.
+
+
+
+
+
+Optimistic Locking in Detail
+
+Optimistic locking does not acquire locks on a database record when it is read. Instead, it checks for modifications at the time of writing or committing the changes. It typically uses a version column or timestamp in the database record.
+
+How It Works:
+
+Transaction A reads a row (with a version number, e.g., version = 1).
+Transaction B reads the same row (also sees version = 1).
+Transaction A updates the row and increments the version (version = 2) and commits.
+Transaction B attempts to update the row, but before committing, it checks the version.
+Transaction B notices that the version in the database (version = 2) has changed from the version it initially read (version = 1).
+This triggers a conflict, and Transaction B will either throw an error or retry.
+
+
+
+
+
+// Optimistic Locking Example SQL
+
+SELECT * from accounts where id =1 ; //balance=10000, version=1   // first thread
+SELECT * from accounts where id =1 ; //balance=10000, version=1   // second thread
+
+//first thread - happened to execute and commit first 
+UPDATE accounts
+SET balance = balance - 100, version = version + 1  //(2)
+WHERE id = 1 AND version = 1;
+
+
+//at this time, balance = 100, version =2
+
+//second thread - will not get any rows updated
+UPDATE accounts  
+SET balance = balance - 100, version = version + 1  //(2)
+WHERE id = 1 AND version = 1;
+
+
+//second thread fails to update any rows , then retries
+
+SELECT * from accounts where id =1 ; //balance=100, version=2  //second thread (second attempt)
+
+//second thread
+UPDATE accounts    //balance = 0, version =3
+SET balance = balance - 100, version = version + 1  //(3)
+WHERE id = 1 AND version = 2;
+
+UPDATE accounts SET balance = balance - 100, version = version + 1 WHERE id = 1 AND version = 2;
+
+
+// The AND version = 1 ensures that the update only happens if no one else has modified the row (i.e., if the version matches what the transaction initially read).
+
+
+
+------------------------------------------------------- 
+
+
+Pessimistic Locking in Detail
+
+Pessimistic locking immediately acquires a database lock on a record when it is read or updated, preventing other transactions from accessing the locked data until the lock is released (typically after the transaction commits or rolls back).
+
+How It Works:
+
+Transaction A reads a row and places an exclusive lock on it.
+Transaction B attempts to read or update the same row, but it is blocked until Transaction A releases the lock.
+Transaction A either commits or rolls back, releasing the lock.
+Transaction B can now proceed.
+
+
+Example SQL for Pessimistic Locking:
+
+In databases like MySQL or PostgreSQL, you can issue a SELECT ... FOR UPDATE query to explicitly acquire a pessimistic lock.
+
+SELECT * FROM accounts WHERE id = 1 FOR UPDATE;
+This query locks the selected row for the duration of the transaction, preventing other transactions from reading or updating it until the current transaction is committed or rolled back.
+
+
+
+Practice example---
+You can setup a test environment with two command line mysql clients and see how individual Isolation levels interplay with each other.
+Transaction Isolation Levels and Operations Table
+
+
+READ UNCOMMITTED: The lowest level of isolation. A transaction can see uncommitted changes made by other transactions, leading to potential issues like dirty reads.
+
+SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+START TRANSACTION;
+.
+Isolation Level		Operation		Scenario
+READ UNCOMMITTED	SELECT (row level)	Transaction A reads a row while Transaction B updates the same row but hasn’t committed.
+.		
+Transaction A Isolation Level	Transaction B Isolation Level	Transaction A Query			Transaction B Query						
+READ UNCOMMITTED		READ UNCOMMITTED		SELECT * FROM accounts WHERE id = 1;	UPDATE accounts SET balance = balance + 100 WHERE id = 1;	
+.
+Expected Result
+Transaction A sees uncommitted (dirty) changes made by Transaction B.
+...
+...
+Isolation Level		Operation		Scenario
+READ UNCOMMITTED	UPDATE (row level)	Transaction A updates a row, and Transaction B updates the same row concurrently.
+.		
+Transaction A Isolation Level	Transaction B Isolation Level	Transaction A Query						Transaction B Query						
+READ UNCOMMITTED		READ UNCOMMITTED		UPDATE accounts SET balance = balance - 50 WHERE id = 1;	UPDATE accounts SET balance = balance + 100 WHERE id = 1;	
+.
+Expected Result
+Lost updates may occur, transactions overwrite each other’s changes.
+
+
+
+Table in PDF;
+
+
+
+
+
+Key Differences:
+
+DriverManager.getConnection():
+
+No pooling: Creates a new connection each time.
+connection.close(): Physically closes the connection to the database.
+HikariDataSource.getConnection():
+
+Connection pooling: Manages a pool of reusable connections.
+connection.close(): Returns the connection to the pool for reuse (does not close the physical connection).
+
+
+
+------------- Preventing Connection Leaks ---
+To ensure connections are returned to the pool, you should always close the connection when you're done with it. The recommended way to ensure this happens is by using a try-with-resources block or explicitly calling connection.close() in a finally block.
+1. Using try-with-resources (Recommended):
+This automatically closes the connection when the block finishes (even if an exception is thrown), and in the case of a pooled connection (e.g., HikariCP), it will return the connection to the pool.
+
+
+
+
+How HikariCP Handles Connection Leaks:
+HikariCP has a feature called leak detection, which allows you to detect when connections are checked out from the pool but never returned (i.e., never closed).
+
+Enabling Leak Detection:
+You can enable leak detection by setting the leakDetectionThreshold property in HikariCP. This property specifies the threshold (in milliseconds) for how long a connection can be open without being closed. If a connection is not returned within this time, HikariCP logs a warning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

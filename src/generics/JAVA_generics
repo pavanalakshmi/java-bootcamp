@@ -1,0 +1,24 @@
+
+
+n a nutshell, generics enable types (classes and interfaces) to be parameters when defining classes, interfaces, and methods. Much like formal parameters in method declarations, type parameters provide a way to re-use the same code with different inputs. The difference is that the inputs to formal parameters are values, while the inputs to type parameters are types.
+
+Code that uses generics has many benefits over non-generic code:
+
+Stronger Type Checks at Compile Time
+A Java compiler applies strong type checking to generic code and issues errors if the code violates type safety. Fixing compile-time errors is easier than fixing runtime errors, which can be difficult to find.
+
+
+Type Parameter Naming Conventions
+
+By convention, type parameter names are single, uppercase letters. This stands in contrast to variable naming conventions, and with good reason: without this convention, it would be difficult to distinguish between a type variable and an ordinary class or interface name.
+
+Common type parameter names include:
+
+E - Element (used extensively by the Java Collections Framework)
+K - Key
+N - Number
+T - Type
+V - Value
+S, U, V, etc. - 2nd, 3rd, 4th types
+
+

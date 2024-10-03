@@ -1,0 +1,446 @@
+
+Anatomy of java code/program - 
+FUNCTIONS - Building blocks of java - Java Function - java code that performs tasks.
+
+Return_type name(optional parameters){ //java - left brace on same line
+actual java code}
+Void - reserved type in java
+
+MAIN - Every java code should have 1 java function - main - entry point to our programs; they execute whenever we run our java code.
+functions don't exist on their own; they should always belong to a class.
+CLASS -  Container for one or more related functions. 
+Every java function should have 1 Class which contains main function - class Main{Functions...}
+
+METHOD - Method is a function part of class.
+In python, functions exist outside class.
+But, when a function exists inside a class, we call it as a method.
+
+ACCESS MODIFIERS - In java, all functions and classes should have access to modifiers. It is a special keyword which determines if other classes and methods in this program can access these methods.
+PUBLIC - 
+PRIVATE - 
+
+JAVA NAMING CONVENTIONS - 
+Classes -> PascalNamingConvention -> First letter of each word must be capital.
+Methods -> camelNamingConvention -> First letter of each word must be capital, except first word.
+
+
+
+// Create new project from template --> Command Line App
+
+PACKAGE - group related classes. It's also called as a container of a group of related classes where some classes are accessible and some are kept for internal purposes.
+Package name is domain name in reverse (eg., com.codewithmosh if exists)
+Packages create a namespace for our project.
+
+Project - source folder
+
+STATIC - main method should always be static.
+
+String[] args -- 
+
+
+COMMENTS - to explain our code to other people, comments don't get executed.
+
+System - is a class
+out - Members(fields) of the System class
+PrintStream -> is the type of out field; it's another class defined in java.
+println - print line - method in PrintStream class.
+
+
+
+HOW JAVA CODE GETS EXECUTED -- COMPILATION and EXECUTION
+
+Compilation - Java compiler executes the source code(.java) to byte code(.class); compiler comes with JDK.
+In IntelliJ, class files are stored in out->production->package name
+The byte code is platform independent, can run in any OS which contains JRE.
+JRE has a software component called JVM which converts byte code to native code(i.e., windows understandable).
+C# and Python have same architecture, so platform independent.
+
+javac Test.java
+Go a folder back to src folder -> java mosh_java_basics.Test
+
+Execution
+
+
+
+
+Java - 5 interesting facts
+1. Java - developed by James Gosling in 1995 at Sun micro systems, which was later acquired by Oracle in 2010.
+Originally called Oak(inspired by Oak tree in Gosling's office), later called Green, and finally renamed to Java (inspired by Java coffee).
+
+4 editions of java for building different kinds of applications.
+1. Standard Edition - JAVA SE - Core java platform which we use - contains all libraries that every java developer must learn.
+2. Enterprise Edition - JAVA EE - used for building very large scale and distributed systems. Build on top of JAVA SE and provides additional libraries for building fault-tolerant, distributed and multi-tiered software.
+3. Micro Edition - JAVA ME - subset of JAVA SE, designed for mobile devices. It has libraries specific to mobile devices.
+4. Java Card - used in smart cards.
+
+Java SE 17 is the latest version of Java. >9million developers for java.
+
+
+
+COURSE STRUCTURE--
+Beginner - Fundamentals
+Types(numbers, strings, boolean etc); mortgage calculator project; Control flow statements(used to build algorithms), loops, conditional statements; add data validations to our project; Clean Coding; Finding and fixing errors; how to package applications for deployments.
+Intermediate - Object-Oriented Programming
+Advanced - Core Java APIs (many classes in java standard library)
+Mastery - Advanced Features - Streams, Threads, database programming
+
+
+FUNDAMENTALS --
+Variables and Constants
+Primitive and Reference Types
+Casting
+Numbers, Strings and Arrays
+Read Input
+
+ 
+
+Variables-- 
+used to temporarily store data in memory.
+Can only store 1 type at a time.
+Have names or labels - called identifier (variable identifier)
+Have assignment operator - should assign variable before reading
+// its not recommended to declare multiple variables in a single line.
+Can assign one variable value to another variable.
+
+Variable naming conventions - camelCaseNotation (myAge etc).
+Use meaningful names for variables - easy to read - descriptive names.
+
+
+TYPES in Java - 
+Primitive types - for storing simple values (numbers, characters, booleans)
+Reference(Non-primitive) - For storing complex objects(objects - date, mail message)
+
+Primitive - 
+Type - Byte - Range
+byte - 1 - [-128, 127]
+short - 2 - [-32k, 32k]
+int - 4 - [-2billion, 2B]
+long - 8 - 
+These 4 are for non-decimal values
+For Decimal point--
+float - 4
+double - 8
+char - 2 - A,B,C..also supports international letters
+boolean - 1 - true/false
+
+
+For large numbers - 123_456_789 (we can use _ instead of , for numbers.
+For long - 123_456_789L (L/l at the end or else it takes as int and throws an error).
+For float - 10.99F (as java takes decimal values as double by default - so F/f).
+
+Byte, long float... all are reserved keywords in java.
+
+
+
+Reference Types-
+Date - we need to declare it using new keyword - should allocate memory.
+CLASS - template or blueprints for creating new objects or new instances.
+We can access objects or members using . Operator.
+Primitive types don't have any members.
+
+
+Difference -- in terms of memory management.
+
+byte x=1;
+byte y = x;
+x=2;
+Both are at different memory locations, if we change x later, y won't be affected as both are independent of each other.
+
+
+Point(class in awt) - is a reference type.
+Point point1 = new Point(1,1);//(x,y)
+Point point2 = point1;
+
+When we execute this, point(1,1) is stored in address 100, point1 has address of point object i.e., 100.
+ 
+Reference type (stores reference to object in the memory).
+If we change one value, it will be reflected in another.
+
+point1.x = 2;
+System.out.println(point2);
+
+
+---- Reference types are copied by references, primitive types are copied by value and these values are completely independent pf each other.
+
+
+
+STRINGS--
+System.out.println("Hello World");
+Hello World is a String literal -> string value;
+
+String variable-
+String message -> this is a reference type, so we should use new --> new String("Hello");
+But there is a short way., we can directly declare.
+
+String concatenation -> + operator.
+
+
+
+PARAMETERS - are holes we define in the methods
+ARGUMENTS - actual values we pass to methods.
+message.replace("!", "*"); // doesnt replace original string, as strings are immutable, we can't change strings after assignment.
+
+
+
+ESCAPE SEQUENCES --
+To include special characters in a string.
+We include \before any special char so it will be escaped.   "Hello \"Pavani\""
+\\ prints \
+\n new line
+\t tabspace
+
+
+Int array
+Arrays are reference types-- new int;
+        int[] numbers = new int[5];
+        numbers[0] = 1;
+//        numbers[10] = 3; // Exception - errors.
+        // other items are initialized to 0 as it is an integer array.
+        System.out.println(numbers); //address of the object in memory.
+        System.out.println(Arrays.toString(numbers)); //[1,0,0,0,0] can pass toFloat, toInt anything - method overloading
+
+        // alternative for array initialization.
+        int[] num = {2,3,1,4,5};
+
+Arrays have fixed length and can't be modified.
+
+
+
+We can also create Multi-dimensional array
+2D - matrix
+3D - to store data for cube
+Used in scientific computations.
+
+Arrays.deepToString(matrix)); // to print multi-dimensional array.
+
+
+
+
+
+CONSTANTS
+Variables that can't be changed later - we can declare as a constant
+final float pi = 3.14f;
+
+
+Arithmetic Expressions-
++ - / * %(reminder of division).
+double result = (double)10 / 3; //casting
+Expression - piece of code which produces a value.
+Numbers beside operators - operands
+
+++ increment
+-- decrement
+Postfix, prefix
+Right side -> first value will be copied, later incremented.
+Left side -> first incremented, then copied.
+
+= assignment operator
++= Augmented/compound assignment operator
+-=, /=, *=
+
+
+Order of operators --
+()
+/*
++-
+
+
+
+
+CASTING & TYPE CONVERSION
+short x=1;
+int y=x+2;
+No error as we can store all the variables in short in int. So, java allocates an anonymous variable in memory to x as integer and assigns it to y.
+This is called IMPLICIT CASTING (automatic casting/conversion).
+
+Byte > short > Long > Float > double
+        double m = 1.1;
+        double n = m+2; // java automatically converts 2 into 2.0
+
+
+        int p = (int)m + 2; //EXPLICIT CASTING - can only happen between compatible types i.e., between numbers
+        // cant convert number into strings., so we use WRAPPER CLASSES.
+        String s = "1";
+        Integer.parseInt(s);
+
+
+WHY PARSING -->
+In most applications, we take input from user as a string from drop down lists etc and later convert into int.
+If we try to parse double as int, we get exception.
+
+
+
+MATH CLASS
+To perform mathematical operations.
+java.lang package
+Round -> round a floating point number to whole number
+Ceil -> returns smallest integer >= given number
+Floor -> largest
+Max
+
+Random - generates random numbers between 0 and 1;
+If we need  between 0 and 100, we need to include *100;
+
+
+
+
+FORMATTING NUMBERS
+To display price, to separate every 3 digits - instead of , we use _
+//        NumberFormat currency = new NumberFormat(); //abstract, cant be instantiated error
+        NumberFormat currency = NumberFormat.getCurrencyInstance(); // this is a factory method, so we use this
+
+        // METHOD CHAINING - chaining multiple methods
+        String out1 = NumberFormat.getPercentInstance().format(0.25);
+
+
+
+READING INPUT FROM USER
+Scanner class - java.util -> inside Scanner we need to mention, where we are going to read the input from -> files or terminal window
+System.in - is a field
+
+gets input from new line because of println method
+So we can use print
+
+
+
+
+
+MORTGAGE CALCULATOR PROJECT
+Enter principal p
+Annual interest rate
+Period (years)
+
+Output-
+Mortgage
+
+M = P (r((1+r)^n)/((1+r)^n)-1)
+Math.pow()
+
+
+R - monthly interest rate - given interest/100(as its given in percent)/12
+N - no of months
+
+
+
+
+
+SUMMARY --
+Variables & constants
+Primitive & Reference Types
+Casting(Implicit & Explicit) & Type conversions
+Numbers, Strings & Arrays
+Read Input from the terminal
+
+
+
+
+
+
+CONTROL FLOW - Controlling the flow of execution of the statements
+
+Comparison operators
+Logical Operators
+Conditional Statements
+Loops
+Add error handling to previous project
+
+
+Comparison operators--
+To compare primitive values
+== equality
+x==y //boolean expression - produces a boolean value
+!= inequality operator
+
+
+
+Logical Operators
+&& Logical And 
+||
+NOT - to reverse a value
+
+
+SIMPLIFYING IF STATEMENTS
+
+TERNERY OPERATOR ?:
+Condition ? if_true : if_false
+
+
+SWITCH STATEMENTS
+To execute diff parts of code depending on value of expression
+Similar to if statements
+
+
+
+Exercise FizzBuzz:
+Number: 5
+If divisible by 5 - return Fizz
+3 - Buzz
+Both 5 and 3 - FizzBuzz
+Not by both - return number
+
+
+
+LOOPS
+FOR LOOPS
+for(declare counter variable called as loop counters; boolean expression to count how many times loop will be executed; increment)
+
+WHILE LOOPS
+Similar to for in terms of functionality, but diff in syntax.
+
+If we don't know how many times loop should be executed, we use while loops.
+
+
+
+
+DO..WHILE LOOPS
+Similar to while loop, but it gets executed at least once
+
+
+
+BREAK AND CONTINUE
+In above while loop, quit gets printed.
+Break - terminates the loop (sometimes prevents infinite loops
+Continue - next statements will be ignored and control moves to the beginning of the loop.
+
+
+For - each loop
+To iterate over arrays or collections
+Limitations -> always forward only, we cant iterate from end to beginning.
+We don't have access to index of each item.
+
+
+
+
+Mortgage Calculator -- UPDATE
+Implement error Handling --
+Add a label--
+Principal ($1K - $1M) -> Enter a number between 1,000 and 1,000,000.
+Annual interest rate - >0 and <=30 -> Enter a value greater than 0 and less than or equal to 30.
+Period -> Enter a value between 1 and 30.
+
+
+
+
+Summary
+How to control program flow
+Operators - Comparison, Logical
+3 control flow statements, conditional statements
+4 types of Loops
+Break and Continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

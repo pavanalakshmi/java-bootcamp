@@ -13,6 +13,10 @@ public class Calculator {
 
     }
 
+    public int add(int x, int y){
+        return x+y;
+    }
+
     public static int calculate(String op) {
         String[] parts = op.split("[\\+\\-\\*/]");
         int val1 = Integer.parseInt(parts[0]);

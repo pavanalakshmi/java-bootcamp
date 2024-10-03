@@ -1,0 +1,104 @@
+
+Collections in Java
+
+Java Collections Framework (JCF) is one of the core components of Java, which provides a standard set of interfaces and classes to handle data structures, such as lists, sets, maps, and queues. 
+It provides a unified architecture to store and manipulate groups of objects, making it easier to work with collections of data in a more efficient and organized way.
+
+The Java Collections Framework (JCF) is like a toolbox for working with groups of data in Java. JCF provides different kinds of containers (called collections) to help you do this efficiently. These containers let you group your items together in different ways, depending on how you want to use them.
+
+
+
+Any group of individual objects that are represented as a single unit is known as a Java Collection of Objects. 
+In Java, a separate framework named the “Collection Framework” has been defined in JDK 1.2 which holds all the Java Collection Classes and Interface in it.
+
+In Java, the Collection interface (java.util.Collection) and Map interface (java.util.Map) are the two main “root” interfaces of Java collection classes.
+
+A framework is a set of classes and interfaces which provide a ready-made architecture.
+
+Before the Collection Framework(or before JDK 1.2) was introduced, the standard methods for grouping Java objects (or collections) were Arrays or Vectors, or Hashtables. All of these collections had no common interface. Therefore, though the main aim of all the collections is the same, the implementation of all these collections was defined independently and had no correlation among them. And also, it is very difficult for the users to remember all the different methods, syntax, and constructors present in every collection class.
+
+Collections framework provides
+Interfaces
+Implementations
+Algorithms
+
+
+Collections-->
+Set -- SortedSet
+List
+Queue
+Deque
+
+Map-> SortedMap
+
+
+Abstract Data Types - Every time we define a new object, we are actually defining a new data type. That is, we are grouping attributes and behaviors to form a new type of data (i.e., object) we can use throughout our programs as if it were a single piece of data. There are actually some commonly used models for defining similar types of data:
+
+ADTs ( Abstract Data Types) - we discuss Data Types in General. There are different types of ADTs, each with their own unique way for storing, accessing and modifying the data. Typically, ADTs will store general data of any kind, although usually the data inside the ADT is all of the same kind ... or at least has something in common.
+
+
+HashMap - key value pairs
+HashSet - only stores unique values, but in not given order, stores in random indices.
+
+Stack-
+The stack is a linear data structure that is used to store the collection of objects. It is based on Last-In-First-Out (LIFO). Java collection framework provides many interfaces and classes to store the collection of objects. One of them is the Stack class that provides different operations such as push, pop, search, etc.
+
+The stack data structure has the two most important operations that are push and pop. The push operation inserts an element into the stack and pop operation removes an element from the top of the stack.
+
+
+
+---------------------------------- ArrayList vs. LinkedList ---------------------------------- 
+
+The LinkedList class is a collection which can contain many objects of the same type, just like the ArrayList.
+
+The LinkedList class has all of the same methods as the ArrayList class because they both implement the List interface. This means that you can add items, change items, remove items and clear the list in the same way.
+
+However, while the ArrayList class and the LinkedList class can be used in the same way, they are built very differently.
+
+How the ArrayList works
+The ArrayList class has a regular array inside it. When an element is added, it is placed into the array. If the array is not big enough, a new, larger array is created to replace the old one and the old one is removed.
+
+How the LinkedList works
+The LinkedList stores its items in "containers." The list has a link to the first container and each container has a link to the next container in the list. To add an element to the list, the element is placed into a new container and that container is linked to one of the other containers in the list.
+
+addFirst()
+addLast()
+removeFirst()
+removeLast()
+getFirst()
+getLast()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@ package multithreading.trading_multithreading.dao;
 
 import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
-import multithreading.trading_multithreading.interfaces.TradePayload;
+import multithreading.trading_multithreading.service.TradePayload;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
