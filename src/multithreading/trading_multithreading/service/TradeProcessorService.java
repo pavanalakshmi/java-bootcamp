@@ -43,16 +43,16 @@ public class TradeProcessorService implements TradeProcessor {
             executor.submit(() -> {
                 try {
                     while (true) {
-                        boolean hasQueue = false;
+                        boolean isQueueEmpty = false;
                         for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
                             processQueue(entry.getValue());
                             if (!processQueue(entry.getValue())) {
                                 return;
                             } else {
-                                hasQueue = true;
+                                isQueueEmpty = true;
                             }
                         }
-                        if (!hasQueue) {
+                        if (!isQueueEmpty) {
                             Thread.sleep(10);
                         }
                     }
@@ -68,7 +68,7 @@ public class TradeProcessorService implements TradeProcessor {
 //            }
 //        } catch (InterruptedException e) {
 //            executor.shutdownNow();
-//            Thread.currentThread().interrupt();
+////            Thread.currentThread().interrupt();
 //        }
     }
 

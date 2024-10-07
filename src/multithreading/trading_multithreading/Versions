@@ -4,11 +4,8 @@ Version 1.1
 and also it will remove the map (concurrentHashMap) in this version - figureNextQueue will give the same queueName everytime.
 .
 sonarlint clean, sout is fine
-build with interfaces that we discussed
 It will fully decoupled and Async Implementation - Main class will say chunkGenerator.start, chunkProcessor.start, tradeProcessor.start,
 chunkGenerator will send messages (with fileName) to a queue from where chunkProcessor will consume from.
-all properties will be in application.properties  -- tradeFilePath, numberOfChunks,:megaphone: tradeDistributionCriteria, chunkProcessorThreadPoolSize , tradeProcessorThreadPoolSize ,tradeProcessorQueueCount ,maxRetryCount , dbUserName ,dbPassword ,dbUrl
-the application should be able to switch between fully single Threaded to multi-Threaded with application property changes
 : Make sure you have retry and DLQ functionality added in this version
 : Add the columns in trade_payloads table
  validity_status column = valid | invalid (to check if the trade line in the file is valid trade with all correct fields present and in the right format)
