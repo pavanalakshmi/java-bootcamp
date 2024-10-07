@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TradeDistributorMapService implements TradeDistributionMap {
     static ConcurrentHashMap<String, String> tradeMap;
-//    private Random random;
+    //    private Random random;
     private int queueIndex;
     ApplicationConfigProperties applicationConfigProperties;
     private List<String> listOfQueues;
@@ -39,7 +39,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
                 String accountNumber = line.split(",")[2];
-                if(!tradeMap.contains(accountNumber)){
+                if(!tradeMap.containsKey(accountNumber)){
 //                String randomQueue = getRandomQueue();
                     String queue = getNextQueue();
                     tradeMap.put(accountNumber, queue);
@@ -48,7 +48,8 @@ public class TradeDistributorMapService implements TradeDistributionMap {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } //        System.out.println(tradeMap.size()); // 9992
+        }
+//                System.out.println("trademap size after processing:"+tradeMap.size()); // 9992
         return tradeMap;
     }
 

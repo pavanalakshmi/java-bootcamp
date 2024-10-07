@@ -22,14 +22,14 @@ public class ReadTradeFile {
         this.chunkQueue = chunkQueue;
     }
 
-    public List<String> readCSVGenerateChunks (String filePath) {
+    public void readCSVGenerateChunks (String filePath) {
         try (BufferedReader fileReader = new BufferedReader(new FileReader(filePath))) {
             String line;
             fileReader.readLine();
             List<String> lines = new ArrayList<>();
 
             while ((line = fileReader.readLine()) != null) {
-                lines.add(line); //totalRows++; // Count rows excluding header
+                lines.add(line);
             }
             int totalRows = lines.size();
             chunkFileNames = chunkGenerator.generateChunks(totalRows, lines, chunksCount);
@@ -43,6 +43,5 @@ public class ReadTradeFile {
         } catch (IOException e) {
             throw new RuntimeException("File read error: " + e.getMessage());
         }
-        return chunkFileNames;
     }
 }

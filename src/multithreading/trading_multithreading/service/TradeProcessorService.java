@@ -24,7 +24,7 @@ public class TradeProcessorService implements TradeProcessor {
     Position position;
     ReadPayloadDAO readPayloadDAO;
     InsertJournalEntryDAO insertJournalEntryDAO;
-    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+    ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
     Map<String, LinkedBlockingQueue<String>> map;
     int queueCount;
 
@@ -42,21 +42,9 @@ public class TradeProcessorService implements TradeProcessor {
         for (int i = 0; i < queueCount; i++) {
             executor.submit(() -> {
                 try {
-                    while (true) {
-                        boolean isQueueEmpty = false;
-                        for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
-                            processQueue(entry.getValue());
-                            if (!processQueue(entry.getValue())) {
-                                return;
-                            } else {
-                                isQueueEmpty = true;
-                            }
-                        }
-                        if (!isQueueEmpty) {
-                            Thread.sleep(10);
-                        }
-                    }
+                    processAllQueues();
                 } catch (SQLException | InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw new RuntimeException(e);
                 }
             });
@@ -70,6 +58,23 @@ public class TradeProcessorService implements TradeProcessor {
 //            executor.shutdownNow();
 ////            Thread.currentThread().interrupt();
 //        }
+    }
+
+    private void processAllQueues() throws SQLException, InterruptedException {
+        while (true) {
+            boolean isQueueEmpty = false;
+            for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
+                processQueue(entry.getValue());
+                if (!processQueue(entry.getValue())) {
+                    return;
+                } else {
+                    isQueueEmpty = true;
+                }
+            }
+            if (!isQueueEmpty) {
+                Thread.sleep(10);
+            }
+        }
     }
 
     private boolean processQueue(LinkedBlockingQueue<String> queue) throws SQLException, InterruptedException {

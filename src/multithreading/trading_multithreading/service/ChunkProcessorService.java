@@ -43,7 +43,6 @@ public class ChunkProcessorService implements ChunkProcessor {
                         processChunk(file);
                         tradeDistributorMap.distributeMap(file); // size - 9992
                         tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
-
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

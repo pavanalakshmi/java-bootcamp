@@ -41,7 +41,7 @@ public class MultiThreadTradeRunner {
     }
 }
 
-// chunk generator and chunk processor in parallel - doing
+// chunk generator and chunk processor in parallel - done
 // if error in trade processor when inserting to positions table,
 // send the acc number back to kafka queue; and create a local hashmap with acc numberm retry count;
 // if retry count 3; dead letter queue ; don't try again

@@ -5,6 +5,7 @@ import multithreading.trading_multithreading.config.HikariCPConfig;
 import multithreading.trading_multithreading.dao.InsertToPositionsDAO;
 import multithreading.trading_multithreading.dao.RetrievePositionsDataDAO;
 import multithreading.trading_multithreading.dao.UpdatePositionsDAO;
+import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,16 +19,20 @@ import java.sql.SQLException;
 
 public class Position {
     HikariDataSource dataSource;
-    public static final int MAX_RETRY_ATTEMPTS = 3; // Retry insertion up to 3 times
     UpdatePositionsDAO updatePositionsDAO;
     InsertToPositionsDAO insertToPositionsDAO;
     RetrievePositionsDataDAO retrievePositionsDataDAO;
+    ApplicationConfigProperties applicationConfigProperties;
+    int maxRetryAttempts;
 
     public Position() {
         dataSource = HikariCPConfig.getDataSource();
         updatePositionsDAO = new UpdatePositionsDAO();
         insertToPositionsDAO = new InsertToPositionsDAO();
         retrievePositionsDataDAO = new RetrievePositionsDataDAO();
+
+        applicationConfigProperties = new ApplicationConfigProperties();
+        maxRetryAttempts = applicationConfigProperties.loadMaxRetryAttempts();
     }
 
     void upsertPositions(String accountNumber, String CUSIP, String direction, int newQuantity) throws SQLException {
@@ -35,18 +40,14 @@ public class Position {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             int retryCount = 0;
-            while (retryCount < MAX_RETRY_ATTEMPTS) {
+            while (retryCount < maxRetryAttempts) {
                 try {
                     int version = retrievePositionsDataDAO.getVersionFromPositions(accountNumber, connection, CUSIP);
                     int existingQuantity = retrievePositionsDataDAO.getQuantityFromPositions(accountNumber, connection, CUSIP);
                     if (version == -1) {
                         insertToPositionsDAO.insertToPositions(accountNumber, CUSIP, newQuantity, connection);
                     } else {
-                        if (direction.equalsIgnoreCase("BUY")) {
-                            newQuantity = existingQuantity + newQuantity;
-                        } else if (direction.equalsIgnoreCase("SELL")) {
-                            newQuantity = existingQuantity - newQuantity;
-                        }
+                        newQuantity = getNewQuantity(newQuantity, existingQuantity, direction);
                         int rowsAffected = updatePositionsDAO.updatePositions(accountNumber, newQuantity, connection, version, CUSIP);
                         if(rowsAffected == 0){
                             connection.rollback();
@@ -57,7 +58,7 @@ public class Position {
                     break;
                 } catch (Exception e) {
                     retryCount++;
-                    if (retryCount >= MAX_RETRY_ATTEMPTS) {
+                    if (retryCount >= maxRetryAttempts) {
                         throw new SQLException("Max retry attempts reached for account: " + accountNumber);
                     }
                     connection.rollback();
@@ -66,6 +67,13 @@ public class Position {
             }
         }
     }
+
+    private int getNewQuantity(int newQuantity, int existingQuantity, String direction) {
+        if (direction.equalsIgnoreCase("BUY")) {
+            newQuantity = existingQuantity + newQuantity;
+        } else if (direction.equalsIgnoreCase("SELL")) {
+            newQuantity = existingQuantity - newQuantity;
+        }
+        return newQuantity;
+    }
 }
-
-

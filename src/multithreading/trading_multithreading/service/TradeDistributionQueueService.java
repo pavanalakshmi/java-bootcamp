@@ -39,28 +39,25 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
 
     public int getQueueIndex(ConcurrentHashMap<String, String> resultMap, String accNumber) {
         int queueIndex = 1;
-
         if(resultMap.containsKey(accNumber)) {
             queueIndex = Integer.parseInt(resultMap.get(accNumber).substring(1))-1;
-//            queueIndex = Integer.parseInt(resultMap.get(accNumber).substring(1)) - 1;
         }
         return queueIndex;
     }
 
-    public void distributeQueue(String file, ConcurrentHashMap<String, String> resultMap) {
+    public synchronized void distributeQueue(String file, ConcurrentHashMap<String, String> resultMap) {
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
                 String tradeId = line.split(",")[0];
                 String accNumber = line.split(",")[2];
-
                 int queueIndex = getQueueIndex(resultMap,accNumber);
-
                 if (queueIndex >= 0 && queueIndex < queues.size()) {
                     queues.get(queueIndex).add(tradeId);
                 } else {
                     System.err.println("Invalid queue index: " + queueIndex + " for trade ID: " + tradeId);
-                }            }
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -69,17 +66,14 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
     public synchronized Map<String, LinkedBlockingQueue<String>> distributeQueue1(String file, ConcurrentHashMap<String, String> resultMap) {
         // get acc number from concurrent hashmaps, but add corresponding trade_id to queues
 //        for (String accountNumber : resultMap.keySet()) {
-
 //        int queueIndex = getQueueIndex(resultMap);
         int queueIndex = 0;
-
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
                 System.out.println(line);
                 String tradeId = line.split(",")[0];
                 System.out.println("trade id :" + tradeId);
-
                 String accountNumberFromLine = line.split(",")[2];
 
 //                    if (accountNumberFromLine.equals(accountNumber)) {
