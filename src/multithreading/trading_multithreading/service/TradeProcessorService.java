@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
 import multithreading.trading_multithreading.dao.InsertJournalEntryDAO;
 import multithreading.trading_multithreading.dao.ReadPayloadDAO;
+import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -18,67 +19,80 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class TradeProcessorService implements TradeProcessor {
-    private ExecutorService executor;
+    private final ExecutorService executor;
     HikariDataSource dataSource;
     Position position;
     ReadPayloadDAO readPayloadDAO;
     InsertJournalEntryDAO insertJournalEntryDAO;
+    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+    Map<String, LinkedBlockingQueue<String>> map;
+    int queueCount;
 
-    public TradeProcessorService() {
-        executor = Executors.newFixedThreadPool(3);
+    public TradeProcessorService(Map<String, LinkedBlockingQueue<String>> queuesMap) {
         dataSource = HikariCPConfig.getDataSource();
         position = new Position();
         readPayloadDAO = new ReadPayloadDAO();
         insertJournalEntryDAO = new InsertJournalEntryDAO();
+        queueCount = applicationConfigProperties.loadTradeProcessorQueueCount();
+        map = queuesMap;
+        executor = Executors.newFixedThreadPool(applicationConfigProperties.loadTradeProcessorThreadPoolSize());
     }
 
-    public void processTrade(Map<String , LinkedBlockingQueue<String>> tradeDistributionQueuesMap){
-        try {
-            for(Map.Entry<String , LinkedBlockingQueue<String>> entry: tradeDistributionQueuesMap.entrySet()){
-                LinkedBlockingQueue<String> queue = entry.getValue();
-                executor.submit(() -> {
-                    try {
-                        processQueue(queue);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
+    public void processTrade() {
+        for (int i = 0; i < queueCount; i++) {
+            executor.submit(() -> {
+                try {
+                    while (true) {
+                        boolean hasQueue = false;
+                        for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
+                            processQueue(entry.getValue());
+                            if (!processQueue(entry.getValue())) {
+                                return;
+                            } else {
+                                hasQueue = true;
+                            }
+                        }
+                        if (!hasQueue) {
+                            Thread.sleep(10);
+                        }
                     }
-                });
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();  // Forcibly terminate if needed
+                } catch (SQLException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (InterruptedException e) {
-                executor.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
+            });
         }
+//        executor.shutdown();
+//        try {
+//            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                executor.shutdownNow();  // Forcibly terminate if needed
+//            }
+//        } catch (InterruptedException e) {
+//            executor.shutdownNow();
+//            Thread.currentThread().interrupt();
+//        }
     }
 
-    private void processQueue(LinkedBlockingQueue<String> queue) throws SQLException {
-//        for(String tradeId: queue){ readPayload(tradeId); }
+    private boolean processQueue(LinkedBlockingQueue<String> queue) throws SQLException, InterruptedException {
         String tradeId;
-        String account_number = "";
-        String CUSIP = "";
-        String direction = "";
-        int quantity = 0;
-        while ((tradeId = queue.poll()) != null) {
+        String accountNumber;
+        String cusip;
+        String direction;
+        int quantity;
+        while ((tradeId = queue.poll(20, TimeUnit.SECONDS)) != null) {
+            if (tradeId.equals("END")) {
+                return false;
+            }
             String payload = readPayloadDAO.readPayload(tradeId);
             String[] payloadData = payload.split(",");
-            account_number = payloadData[2];
-            CUSIP = payloadData[3];
+            accountNumber = payloadData[2];
+            cusip = payloadData[3];
             direction = payloadData[4];
             quantity = Integer.parseInt(payloadData[5]);
-//          account_number = payload.getString("account_number");
-
-            if(readPayloadDAO.isValidCUSIPSymbol(CUSIP)){
-                insertJournalEntryDAO.insertToJournalEntry(account_number, CUSIP, direction, quantity);
-                position.upsertPositions(account_number, CUSIP, direction, quantity);
+            if (readPayloadDAO.isValidCUSIPSymbol(cusip)) {
+                insertJournalEntryDAO.insertToJournalEntry(accountNumber, cusip, direction, quantity);
+                position.upsertPositions(accountNumber, cusip, direction, quantity);
             }
         }
+        return true;
     }
 }

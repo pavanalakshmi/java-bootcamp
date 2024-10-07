@@ -1,18 +1,25 @@
 package multithreading.trading_multithreading.service;
 
-import java.io.*;
+import multithreading.trading_multithreading.util.ApplicationConfigProperties;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReadTradeFile {
     public int chunksCount;
     ChunkGeneratorService chunkGenerator;
     List<String> chunkFileNames;
+    LinkedBlockingQueue<String> chunkQueue;
 
-    public ReadTradeFile( ) {
-        chunksCount = loadChunkSizeFromConfigProperties();
+    public ReadTradeFile( LinkedBlockingQueue<String> chunkQueue ) {
+        ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+        chunksCount = applicationConfigProperties.loadChunkSize();
         chunkGenerator = new ChunkGeneratorService();
+        this.chunkQueue = chunkQueue;
     }
 
     public List<String> readCSVGenerateChunks (String filePath) {
@@ -26,26 +33,16 @@ public class ReadTradeFile {
             }
             int totalRows = lines.size();
             chunkFileNames = chunkGenerator.generateChunks(totalRows, lines, chunksCount);
+            for(String chunkFileName : chunkFileNames){
+                try {
+                    chunkQueue.put(chunkFileName);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("Failed to add chunk to queue: "+e);
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException("File read error: " + e.getMessage());
         }
         return chunkFileNames;
-    }
-
-    private int loadChunkSizeFromConfigProperties() {
-        Properties properties = new Properties();
-        try (InputStream input = new FileInputStream("/Users/akm/pavani/JavaBootcamp/resources/trade.properties")) {
-            properties.load(input);
-            try {
-                String chunkCountString = properties.getProperty("chunks.count");
-                chunksCount = Integer.parseInt(chunkCountString);
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid chunks count in properties file.\"+\n" + " Fix the application.properties file before re-running the program ");
-                System.exit(1);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return chunksCount;
     }
 }

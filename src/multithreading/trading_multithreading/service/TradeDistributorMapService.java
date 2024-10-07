@@ -1,14 +1,20 @@
 package multithreading.trading_multithreading.service;
 
+import multithreading.trading_multithreading.util.ApplicationConfigProperties;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TradeDistributorMapService implements TradeDistributionMap {
     static ConcurrentHashMap<String, String> tradeMap;
 //    private Random random;
     private int queueIndex;
+    ApplicationConfigProperties applicationConfigProperties;
+    private List<String> listOfQueues;
 
     public ConcurrentHashMap<String, String> getTradeMap() {
         return tradeMap;
@@ -16,11 +22,19 @@ public class TradeDistributorMapService implements TradeDistributionMap {
 
     public TradeDistributorMapService() {
         tradeMap = new ConcurrentHashMap<>();
+        listOfQueues = new ArrayList<>();
+        applicationConfigProperties = new ApplicationConfigProperties();
+        int queueCount = applicationConfigProperties.loadTradeProcessorQueueCount();
 //        random = new Random();
-        queueIndex=0; //Initialize the index for round-robin assignment
+
+        queueIndex=1; //Initialize the index for round-robin assignment
+
+        for(int i=1;i<=queueCount;i++){
+            listOfQueues.add("q"+i);
+        }
     }
 
-    public ConcurrentHashMap<String,String> distributeMap(String file){
+    public synchronized ConcurrentHashMap<String,String> distributeMap(String file){
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
@@ -40,23 +54,24 @@ public class TradeDistributorMapService implements TradeDistributionMap {
 
     private String getNextQueue() {
         // Round robin distribution so that each q gets equal values
-        String queue;
+//        String queue;
         // Determine which queue to assign based on the current index
-        switch (queueIndex) {
-            case 0:
-                queue = "q1";
-                break;
-            case 1:
-                queue = "q2";
-                break;
-            case 2:
-            default:
-                queue = "q3";
-                break;
-        }
+//        switch (queueIndex) {
+//            case 0:
+//                queue = "q1";
+//                break;
+//            case 1:
+//                queue = "q2";
+//                break;
+//            case 2:
+//            default:
+//                queue = "q3";
+//                break;
+//        }
         // Increment the index and wrap around if necessary
-        queueIndex = (queueIndex + 1) % 3;
-        return queue;
+        queueIndex = (queueIndex + 1) % listOfQueues.size();
+//        String queue = listOfQueues.get(queueIndex);
+        return "q"+(queueIndex+1);
     }
 
 //    private String getRandomQueue() {
@@ -71,4 +86,5 @@ public class TradeDistributorMapService implements TradeDistributionMap {
 //                return "q3";
 //        }
 //    }
+
 }
