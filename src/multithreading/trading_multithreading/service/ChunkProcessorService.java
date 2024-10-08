@@ -2,7 +2,7 @@ package multithreading.trading_multithreading.service;
 
 import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
-import multithreading.trading_multithreading.dao.InsertPayloadDAO;
+import multithreading.trading_multithreading.dao.InsertUpdatePayloadDAO;
 import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.io.BufferedReader;
@@ -15,20 +15,22 @@ import java.util.concurrent.TimeUnit;
 
 public class ChunkProcessorService implements ChunkProcessor {
     private final ExecutorService executor;
-    private final InsertPayloadDAO insertPayloadDAO;
+    private final InsertUpdatePayloadDAO insertPayloadDAO;
     HikariDataSource dataSource;
     TradeDistributorMapService tradeDistributorMap;
     TradeDistributionQueueService tradeDistributionQueue;
     static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
     private final LinkedBlockingQueue<String> chunkQueue;
+    boolean useMap;
 
     public ChunkProcessorService(LinkedBlockingQueue<String> chunkQueue, TradeDistributionQueueService tradeDistributionQueueService) {
         this.chunkQueue = chunkQueue;
         executor = Executors.newFixedThreadPool(applicationConfigProperties.loadChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
-        insertPayloadDAO = new InsertPayloadDAO();
+        insertPayloadDAO = new InsertUpdatePayloadDAO();
         dataSource = HikariCPConfig.getDataSource();
         tradeDistributorMap = new TradeDistributorMapService();
         this.tradeDistributionQueue = tradeDistributionQueueService;
+        useMap = applicationConfigProperties.loadUseMap();
     }
 
     public void chunksProcessor() {
@@ -41,8 +43,13 @@ public class ChunkProcessorService implements ChunkProcessor {
                 executor.submit(() -> {
                     try {
                         processChunk(file);
-                        tradeDistributorMap.distributeMap(file); // size - 9992
-                        tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
+                        if(useMap){
+                            tradeDistributorMap.distributeMap(file); // size - 9992
+                            tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
+                        } else{
+                            tradeDistributionQueue.distributeQueueWithoutMap(file);
+                        }
+
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

@@ -1,10 +1,5 @@
 package multithreading.trading_multithreading.service;
 
-// reads queues trade_id and run threads in parallel
-// read payload from trade_payloads table
-// looks up symbol in securities table; if available -> add
-// acc no, CUSIP, direction, quantity, posted_status
-
 import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
 import multithreading.trading_multithreading.dao.InsertJournalEntryDAO;
@@ -45,7 +40,7 @@ public class TradeProcessorService implements TradeProcessor {
                     processAllQueues();
                 } catch (SQLException | InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
+                    System.out.println("Error while processing queue: "+e.getMessage());
                 }
             });
         }
@@ -94,7 +89,7 @@ public class TradeProcessorService implements TradeProcessor {
             direction = payloadData[4];
             quantity = Integer.parseInt(payloadData[5]);
             if (readPayloadDAO.isValidCUSIPSymbol(cusip)) {
-                insertJournalEntryDAO.insertToJournalEntry(accountNumber, cusip, direction, quantity);
+                insertJournalEntryDAO.insertToJournalEntry(accountNumber, cusip, direction, quantity, tradeId);
                 position.upsertPositions(accountNumber, cusip, direction, quantity);
             }
         }

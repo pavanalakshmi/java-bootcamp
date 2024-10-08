@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class TradeDistributionQueueService implements TradeDistributionQueue {
@@ -28,7 +28,7 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
         return resultQueues;
     }
 
-    public int getQueueIndex(ConcurrentHashMap<String, String> resultMap, String accNumber) {
+    public int getQueueIndex(ConcurrentMap<String, String> resultMap, String accNumber) {
         int queueIndex = 1;
         if(resultMap.containsKey(accNumber)) {
             queueIndex = Integer.parseInt(resultMap.get(accNumber).substring(1))-1;
@@ -36,7 +36,7 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
         return queueIndex;
     }
 
-    public synchronized void distributeQueue(String file, ConcurrentHashMap<String, String> resultMap) {
+    public synchronized void distributeQueue(String file, ConcurrentMap<String, String> resultMap) {
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
@@ -53,4 +53,24 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
             throw new RuntimeException(e);
         }
     }
+
+    public synchronized void distributeQueueWithoutMap(String file) {
+        String line;
+        int queueIndex = 0;
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
+            while ((line = fileReader.readLine()) != null) {
+                String tradeId = line.split(",")[0];
+                String accNumber = line.split(",")[2];
+                // assign trades in a round-robin manner
+                if (queueIndex >= queues.size()) {
+                    queueIndex = 0; // Reset the queue index to cycle through queues
+                }
+                queues.get(queueIndex).add(tradeId);
+                queueIndex++;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading file in distributeQueueWithoutMap: "+e);
+        }
+    }
+
 }

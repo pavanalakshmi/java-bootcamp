@@ -1,18 +1,13 @@
 
 Version 1.1
-(does not use map) will bring up version1 in singleThreaded mode entirely using the properties
-and also it will remove the map (concurrentHashMap) in this version - figureNextQueue will give the same queueName everytime.
+Retry mechanism - done wrong
+: Make sure you have DLQ functionality added in this version
+// if error in trade processor when inserting to positions table,
+// send the acc number back to kafka queue; and create a local hashmap with acc numberm retry count;
+// if retry count 3; dead letter queue ; don't try again
+// record
 .
-sonarlint clean, sout is fine
-It will fully decoupled and Async Implementation - Main class will say chunkGenerator.start, chunkProcessor.start, tradeProcessor.start,
-chunkGenerator will send messages (with fileName) to a queue from where chunkProcessor will consume from.
-: Make sure you have retry and DLQ functionality added in this version
-: Add the columns in trade_payloads table
- validity_status column = valid | invalid (to check if the trade line in the file is valid trade with all correct fields present and in the right format)
- lookup_status column = pass | fail (to check if the security exists in the securities_reference table or not )
-je_status column = posted | not_posted (to show whether the trade got posted into JE table or not, initially it will be not_posted when trade is saved by the chunk processor in trade_payloads table, later the trade_processor will update it to posted if its been able to create journal entry successfully for a given trade_id )
-: figureTheNextQ method will work with the following properties for the trade distribution logic
-distributionLogic.useMap      = true / false
+figureTheNextQ method will work with the following properties for the trade distribution logic
 distributionLogic.criteria        = tradeId / accountNumber
 distributionLogic.algorithm    = round-robin / random
 
@@ -21,8 +16,6 @@ Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
 create 1 million data set for trades
 figureNextQ will give random QueueName everytime
 noOfQueues = 5, threadPoolSize for tradeProcessor=10
-
-
 
 version 2-stored-procedure updates:
 version -2 will not do Position Update in the same context of execution

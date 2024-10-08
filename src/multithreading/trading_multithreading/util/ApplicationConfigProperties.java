@@ -65,6 +65,11 @@ public class ApplicationConfigProperties {
         Properties properties = loadProperties();
         return Integer.parseInt(properties.getProperty("tradeProcessorQueueCount"));
     }
+
+    public boolean loadUseMap(){
+        Properties properties = loadProperties();
+        return Boolean.getBoolean(properties.getProperty("distributionLogic.useMap"));
+    }
 }
 
 /**

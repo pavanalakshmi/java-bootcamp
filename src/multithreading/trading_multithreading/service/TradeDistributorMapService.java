@@ -8,14 +8,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class TradeDistributorMapService implements TradeDistributionMap {
-    static ConcurrentHashMap<String, String> tradeMap;
+    ConcurrentMap<String, String> tradeMap;
     private int queueIndex;
     ApplicationConfigProperties applicationConfigProperties;
-    private List<String> listOfQueues;
+    private final List<String> listOfQueues;
 
-    public ConcurrentHashMap<String, String> getTradeMap() {
+    public ConcurrentMap<String, String> getTradeMap() {
         return tradeMap;
     }
 
@@ -30,7 +31,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
         }
     }
 
-    public synchronized ConcurrentHashMap<String,String> distributeMap(String file){
+    public synchronized void distributeMap(String file){
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
@@ -41,9 +42,8 @@ public class TradeDistributorMapService implements TradeDistributionMap {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("Error while reading file in distributeMap: "+e.getMessage());
         }
-        return tradeMap;
     }
 
     private String getNextQueue() {
