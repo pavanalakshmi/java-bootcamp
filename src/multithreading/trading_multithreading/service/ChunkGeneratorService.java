@@ -20,7 +20,6 @@ public class ChunkGeneratorService {
             final int index = chunkIndex;
             int start = (index-1) * rowsPerChunk;
             int end = index * rowsPerChunk;
-            // Allocate remaining rows to the last chunk
             if (index == chunksCount) {
                 end +=remainingRows;
             }
@@ -29,7 +28,7 @@ public class ChunkGeneratorService {
             List<String> chunkData = new ArrayList<>();
             for (int i = start; i <end; i++) {
                 chunkData.add(lines.get(i));
-            } //chunkData = lines.subList(start, end+1);
+            }
             try {
                 executor.submit(() -> {
                     try {

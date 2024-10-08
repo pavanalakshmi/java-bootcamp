@@ -6,16 +6,8 @@ import multithreading.trading_multithreading.dao.InsertToPositionsDAO;
 import multithreading.trading_multithreading.dao.RetrievePositionsDataDAO;
 import multithreading.trading_multithreading.dao.UpdatePositionsDAO;
 import multithreading.trading_multithreading.util.ApplicationConfigProperties;
-
 import java.sql.Connection;
 import java.sql.SQLException;
-
-/** positions(account_number VARCHAR(20), CUSIP VARCHAR(20), position_id int AUTO_INCREMENT PRIMARY KEY, position int, version int);
- 1. select version from positions -> if -1, insert-> default version 0
- if not -1-> get quantity; update -> direction buy quantity+/ SELL quantity- ; version++
- if rows affected =0; rollback
- retry mechanism
- **/
 
 public class Position {
     HikariDataSource dataSource;

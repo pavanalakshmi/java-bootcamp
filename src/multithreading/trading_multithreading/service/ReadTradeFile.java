@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReadTradeFile {
-    public int chunksCount;
+    public final int chunksCount;
     ChunkGeneratorService chunkGenerator;
     List<String> chunkFileNames;
     LinkedBlockingQueue<String> chunkQueue;

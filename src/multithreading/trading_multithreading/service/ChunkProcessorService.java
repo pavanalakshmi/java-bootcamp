@@ -38,7 +38,7 @@ public class ChunkProcessorService implements ChunkProcessor {
                 if(file==null){
                     break;
                 }
-                executor.submit(() -> { // Submit chunk processing to the executor
+                executor.submit(() -> {
                     try {
                         processChunk(file);
                         tradeDistributorMap.distributeMap(file); // size - 9992
@@ -65,8 +65,6 @@ public class ChunkProcessorService implements ChunkProcessor {
 //                    dataSource.close();
 //                }
 //        }
-//        System.out.println("Map SIZE :"+tradeDistributorMap.getTradeMap().size());
-//        System.out.println("RES QUEUE :"+tradeDistributionQueue.getResultQueues());
     }
 
     public void processChunk(String file) throws IOException {
@@ -78,13 +76,3 @@ public class ChunkProcessorService implements ChunkProcessor {
         }
     }
 }
-
-/**
- Submit distributeMap as a task to the executor and capture the Future
- Future<ConcurrentHashMap<String, String>> future = executor.submit(() ->
- try {
- resultMap = future.get();
- } catch (InterruptedException | ExecutionException e) {
- throw new RuntimeException(e);
- }
- **/
