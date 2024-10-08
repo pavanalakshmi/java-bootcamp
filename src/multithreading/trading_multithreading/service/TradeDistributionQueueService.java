@@ -1,5 +1,7 @@
 package multithreading.trading_multithreading.service;
 
+import multithreading.trading_multithreading.util.ApplicationConfigProperties;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,8 +15,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class TradeDistributionQueueService implements TradeDistributionQueue {
     private final List<LinkedBlockingQueue<String>> queues;
     Map<String, LinkedBlockingQueue<String>> resultQueues;
+    ApplicationConfigProperties applicationConfigProperties;
 
     public TradeDistributionQueueService(int numberOfQueues) {
+        applicationConfigProperties = new ApplicationConfigProperties();
         queues = new ArrayList<>(numberOfQueues);
         resultQueues = new HashMap<>();
         for (int i = 0; i < numberOfQueues; i++) {
@@ -55,17 +59,26 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
     }
 
     public synchronized void distributeQueueWithoutMap(String file) {
+        String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
+        if(criteria.equals("tradeId")){
+            processFile(file, 0);
+        } else if (criteria.equals("accountNumber")) {
+            processFile(file, 2);
+//            --> modify Trade processor service - processQueue
+        }
+    }
+
+    private void processFile(String file, int index) {
         String line;
         int queueIndex = 0;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
-                String tradeId = line.split(",")[0];
-                String accNumber = line.split(",")[2];
+                String identifier = line.split(",")[index];
                 // assign trades in a round-robin manner
                 if (queueIndex >= queues.size()) {
                     queueIndex = 0; // Reset the queue index to cycle through queues
                 }
-                queues.get(queueIndex).add(tradeId);
+                queues.get(queueIndex).add(identifier);
                 queueIndex++;
             }
         } catch (IOException e) {

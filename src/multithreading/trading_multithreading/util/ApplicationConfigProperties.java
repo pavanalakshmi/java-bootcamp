@@ -70,24 +70,14 @@ public class ApplicationConfigProperties {
         Properties properties = loadProperties();
         return Boolean.getBoolean(properties.getProperty("distributionLogic.useMap"));
     }
-}
 
-/**
-public int loadTradeProcessorQueueCountFromConfigProperties() {
-    Properties properties = new Properties();
-    int tradeProcessorQueueCount = 0;
-    try (InputStream input = new FileInputStream(FILE_PATH)) {
-        properties.load(input);
-        try {
-            String tradeProcessorQueueCountString = properties.getProperty("tradeProcessorQueueCount");
-            tradeProcessorQueueCount = Integer.parseInt(tradeProcessorQueueCountString);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid chunks count in properties file.\"+\n" + " Fix the application.properties file before re-running the program ");
-            System.exit(1);
-        }
-    } catch (IOException e) {
-        throw new ConfigFileReadException(ERROR_MESSAGE+e.getMessage());
+    public String loadCriteriaTradeOrAccNo(){
+        Properties properties = loadProperties();
+        return properties.getProperty("distributionLogic.criteria");
     }
-    return tradeProcessorQueueCount;
+
+    public String loadAlgorithm(){
+        Properties properties = loadProperties();
+        return properties.getProperty("distributionMapLogic.algorithm");
+    }
 }
-**/

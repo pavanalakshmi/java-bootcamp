@@ -1,15 +1,10 @@
 
-Version 1.1
-Retry mechanism - done wrong
-: Make sure you have DLQ functionality added in this version
-// if error in trade processor when inserting to positions table,
-// send the acc number back to kafka queue; and create a local hashmap with acc numberm retry count;
-// if retry count 3; dead letter queue ; don't try again
 // record
-.
+
+Version 1.1
 figureTheNextQ method will work with the following properties for the trade distribution logic
-distributionLogic.criteria        = tradeId / accountNumber
-distributionLogic.algorithm    = round-robin / random
+distributionLogic.criteria        = tradeId / accountNumber --> accountNumber ??
+
 
 
 Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
