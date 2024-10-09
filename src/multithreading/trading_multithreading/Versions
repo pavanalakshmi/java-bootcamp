@@ -5,8 +5,6 @@ Version 1.1
 figureTheNextQ method will work with the following properties for the trade distribution logic
 distributionLogic.criteria        = tradeId / accountNumber --> accountNumber ??
 
-
-
 Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
 create 1 million data set for trades
 figureNextQ will give random QueueName everytime
