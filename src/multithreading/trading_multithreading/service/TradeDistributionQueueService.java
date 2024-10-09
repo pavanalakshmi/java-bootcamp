@@ -59,31 +59,20 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
     }
 
     public synchronized void distributeQueueWithoutMap(String file) {
-        String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
-        if(criteria.equals("tradeId")){
-            processFile(file, 0);
-        } else if (criteria.equals("accountNumber")) {
-            processFile(file, 2);
-//            --> modify Trade processor service - processQueue
-        }
-    }
-
-    private void processFile(String file, int index) {
         String line;
         int queueIndex = 0;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
-                String identifier = line.split(",")[index];
+                String tradeId = line.split(",")[0];
                 // assign trades in a round-robin manner
                 if (queueIndex >= queues.size()) {
                     queueIndex = 0; // Reset the queue index to cycle through queues
                 }
-                queues.get(queueIndex).add(identifier);
+                queues.get(queueIndex).add(tradeId);
                 queueIndex++;
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading file in distributeQueueWithoutMap: "+e);
         }
     }
-
 }

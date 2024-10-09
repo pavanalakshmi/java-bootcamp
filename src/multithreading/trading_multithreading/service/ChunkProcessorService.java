@@ -44,7 +44,13 @@ public class ChunkProcessorService implements ChunkProcessor {
                     try {
                         processChunk(file);
                         if(useMap){
-                            tradeDistributorMap.distributeMap(file); // size - 9992
+                            String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
+                            if(criteria.equals("tradeId")){ //10k
+                                tradeDistributorMap.distributeMapWithTradeId(file);
+                            } else if (criteria.equals("accountNumber")) { //9992
+                                tradeDistributorMap.distributeMapWithAccountNumber(file);
+                            }
+//                            tradeDistributorMap.distributeMap(file); // size - 9992
                             tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
                         } else{
                             tradeDistributionQueue.distributeQueueWithoutMap(file);

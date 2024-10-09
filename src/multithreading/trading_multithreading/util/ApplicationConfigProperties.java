@@ -68,7 +68,12 @@ public class ApplicationConfigProperties {
 
     public boolean loadUseMap(){
         Properties properties = loadProperties();
-        return Boolean.getBoolean(properties.getProperty("distributionLogic.useMap"));
+        String useMap = properties.getProperty("distributionLogic.useMap");
+        if(useMap.equals("true")){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public String loadCriteriaTradeOrAccNo(){

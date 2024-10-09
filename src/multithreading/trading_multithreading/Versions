@@ -1,19 +1,11 @@
-
 // record
-
-Version 1.1
-figureTheNextQ method will work with the following properties for the trade distribution logic
-distributionLogic.criteria        = tradeId / accountNumber --> accountNumber ??
-
-
 
 Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
 create 1 million data set for trades
-figureNextQ will give random QueueName everytime
-noOfQueues = 5, threadPoolSize for tradeProcessor=10
+
 
 version 2-stored-procedure updates:
-version -2 will not do Position Update in the same context of execution
+version - 2 will not do Position Update in the same context of execution
 it will rather run a stored procedure every few seconds and pick the journal entries (by insert time stamp) with NON_POSTED status
 and post them and then update them to POSTED status
 .
@@ -22,12 +14,24 @@ First half will be done in Java
 First half will load the payload from trade_payloads table using trade_id it received from the trades queue
 then it will look it up in the securities_reference table
 if the 1. or 2. fails , put the trade_id into dead letter queue (we cannot fix anything by retrying this)
+
 Second half will be done in Stored Procedure
 It will call stored procedure to insert the journal entry into the journal_entries table and positions table
 if the SP (stored procedure) succeeds on JE insert step , it will proceed to do upsert into Positions table while doing optimistic locking and then get out with message POSITON_UPDATE_DONE
 if the SP fails on the insert JE step, it will return JE_INSERT_FAILED, the java side will retry two more times before sending to DLQ
 if the SP fails on the position update , it will return appropriate error like POSITION_UPDATE_FAILED_IN_OPTIMISTIC_LOCKING and then java side will retry two more times before sending to DLQ
 SP will do both insert JE and upsert Position in a transaction, which will fail or succeed atomically
+
+
+
+CREATE PROCEDURE procedure_name
+AS
+sql_statement
+GO;
+
+
+
+
 
 
 version-3

@@ -34,7 +34,29 @@ public class TradeDistributorMapService implements TradeDistributionMap {
         }
     }
 
-    public synchronized void distributeMap(String file){
+    public synchronized void distributeMapWithTradeId(String file){
+        String line;
+        String algorithm = applicationConfigProperties.loadAlgorithm();
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
+            while ((line = fileReader.readLine()) != null) {
+                String tradeId = line.split(",")[0];
+                if(!tradeMap.containsKey(tradeId)){
+                    if(algorithm.equals("round-robin")){
+                        String queue = getNextQueue();
+                        tradeMap.put(tradeId, queue);
+                    } else if(algorithm.equals("random")){
+                        String randomQueue = getRandomQueue();
+                        tradeMap.put(tradeId, randomQueue);
+                    }
+                }
+                System.out.println(tradeMap.size()); // since all tradeIds is unique
+            }
+        } catch (IOException e) {
+            System.out.println("Error while reading file in distributeMap: "+e.getMessage());
+        }
+    }
+
+    public synchronized void distributeMapWithAccountNumber(String file){
         String line;
         String algorithm = applicationConfigProperties.loadAlgorithm();
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
