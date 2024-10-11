@@ -6,6 +6,8 @@ import multithreading.trading_multithreading.service.TradeDistributionQueueServi
 import multithreading.trading_multithreading.service.TradeProcessorService;
 import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MultiThreadTradeRunner {
@@ -13,6 +15,8 @@ public class MultiThreadTradeRunner {
     public static void main(String[] args) {
         ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
         String filePath = applicationConfigProperties.loadFilePath();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         LinkedBlockingQueue<String> chunkQueue = new LinkedBlockingQueue<>();
         TradeDistributionQueueService tradeDistributionQueueService = new TradeDistributionQueueService(applicationConfigProperties.loadTradeProcessorQueueCount());
@@ -21,9 +25,12 @@ public class MultiThreadTradeRunner {
         ChunkProcessorService chunkProcessor = new ChunkProcessorService(chunkQueue, tradeDistributionQueueService);
         TradeProcessorService tradeProcessorService = new TradeProcessorService(tradeDistributionQueueService.getResultQueues());
 
+        long startTime = System.currentTimeMillis();
+
         try {
             Thread chunkProcessorThread = new Thread(chunkProcessor::chunksProcessor);
             chunkProcessorThread.start();
+            System.out.println("Timestamp: "+ localDateTime.format(formatter));
             System.out.println("Chunk Processor started >");
 
             Thread chunkGeneratorThread = new Thread(() -> readTradeFile.readCSVGenerateChunks(filePath));
@@ -40,5 +47,9 @@ public class MultiThreadTradeRunner {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime; // Duration in milliseconds
+
+        System.out.println("Total execution time: " + (duration*0.001) + " seconds");
     }
 }

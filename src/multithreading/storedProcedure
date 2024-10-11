@@ -1,0 +1,97 @@
+-- use jdbc;
+
+DELIMITER //
+CREATE PROCEDURE `INSERT_JOURNAL_UPDATE_POSITION` (
+IN p_account_number VARCHAR(50),
+IN p_cusip VARCHAR(50),
+    IN p_direction VARCHAR(50),
+    IN p_quantity INT,
+    IN p_tradeId VARCHAR(50),
+    OUT p_status_message VARCHAR(100)
+)
+BEGIN
+DECLARE v_version INT;
+DECLARE v_existing_quantity INT;
+-- Error handler for any SQL exception
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+
+BEGIN
+-- Rollback the transaction in case of failure
+ROLLBACK;
+SET p_status_message = 'JE_INSERT_FAILED';
+END;
+
+    -- Start the transaction
+START TRANSACTION;
+
+    -- Step 1: Insert into journal_entry table
+INSERT INTO journal_entry (account_number, CUSIP, direction, quantity, timestamp, posted_status) VALUES (p_account_number, p_cusip, p_direction, p_quantity, NOW(), 'true');
+
+    -- Check if the journal entry insertion succeeded
+    IF ROW_COUNT() = 0 THEN
+        SET p_status_message = 'JE_INSERT_FAILED';
+        ROLLBACK;
+        -- LEAVE INSERT_JOURNAL_UPDATE_POSITION;
+        -- RETURN;
+    END IF;
+
+    -- Step 2: Check if the position already exists
+    SELECT quantity, version
+    INTO v_existing_quantity, v_version
+    FROM positions
+    WHERE account_number = p_account_number
+    AND CUSIP = p_cusip
+    FOR UPDATE;
+
+    -- Step 3: If the position exists, update it with optimistic locking
+    IF v_version IS NOT NULL THEN
+        -- Adjust the quantity based on the direction (BUY/SELL)
+        IF p_direction = 'BUY' THEN
+            SET p_quantity = v_existing_quantity + p_quantity;
+        ELSEIF p_direction = 'SELL' THEN
+            SET p_quantity = v_existing_quantity - p_quantity;
+        END IF;
+
+        -- Update the positions table with optimistic locking
+        UPDATE positions
+        SET quantity = p_quantity, version = v_version + 1
+        WHERE account_number = p_account_number
+        AND CUSIP = p_cusip
+        AND version = v_version;
+
+        -- If no rows were updated, optimistic locking failed
+        IF ROW_COUNT() = 0 THEN
+            SET p_status_message = 'POSITION_UPDATE_FAILED_IN_OPTIMISTIC_LOCKING';
+            ROLLBACK;
+            -- LEAVE INSERT_JOURNAL_UPDATE_POSITION;
+            -- RETURN;
+        END IF;
+
+    ELSE
+        -- If the position does not exist, insert a new one
+        INSERT INTO positions (account_number, CUSIP, quantity, version)
+        VALUES (p_account_number, p_cusip, p_quantity, 1);
+    END IF;
+
+    -- Commit the transaction if all steps succeed
+    COMMIT;
+    SET p_status_message = 'POSITION_UPDATE_DONE';
+END //
+DELIMITER ;
+
+
+
+
+
+
+
+
+SET @status_message = '';
+ CALL INSERT_JOURNAL_UPDATE_POSITION(
+ 'ACC12345',          -- Account number
+ 'CUSIP12345',       -- CUSIP code
+ 'BUY',              -- Direction (BUY or SELL)
+ 100,                -- Quantity
+ @status_message     -- Output variable to capture status message
+ );
+ SELECT @status_message; -- To see the result/status message

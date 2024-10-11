@@ -7,11 +7,13 @@ import multithreading.trading_multithreading.service.TradePayload;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 public class InsertUpdatePayloadDAO implements TradePayload {
     HikariDataSource dataSource;
     ReadPayloadDAO readPayloadDAO;
     RetrieveJournalEntryDAO retrieveJournalEntryDAO;
+    String insertSQL = "INSERT INTO trade_payloads(trade_id, validity_status, payload, lookup_status, je_status) VALUES (?,?,?,?,?)";
 
     public InsertUpdatePayloadDAO() {
         readPayloadDAO = new ReadPayloadDAO();
@@ -20,7 +22,6 @@ public class InsertUpdatePayloadDAO implements TradePayload {
     }
 
     public void insertIntoPayload(String line){
-        String insertSQL = "INSERT INTO trade_payloads(trade_id, validity_status, payload, lookup_status, je_status) VALUES (?,?,?,?,?)";
         String[] data = line.split(",");
         String status = checkValidPayloadStatus(data) ? "valid" : "invalid";
         boolean validCusip = readPayloadDAO.isValidCUSIPSymbol(data[3]);
@@ -37,6 +38,30 @@ public class InsertUpdatePayloadDAO implements TradePayload {
             insertStatement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error processing row: " + e.getMessage());
+        }
+    }
+
+    public void insertIntoPayloadBatch(List<String> lines) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
+            for (String line : lines) {
+                String[] data = line.split(",");
+                String status = checkValidPayloadStatus(data) ? "valid" : "invalid";
+                boolean validCusip = readPayloadDAO.isValidCUSIPSymbol(data[3]);
+                String lookUpStatus = validCusip ? "pass" : "fail";
+                boolean journalEntryStatus = retrieveJournalEntryDAO.isJournalEntryExist(data[2], data[3]);
+                String jeStatus = journalEntryStatus ? "posted" : "not_posted";
+
+                insertStatement.setString(1, data[0]);
+                insertStatement.setString(2, status);
+                insertStatement.setString(3, line);
+                insertStatement.setString(4, lookUpStatus);
+                insertStatement.setString(5, jeStatus);
+                insertStatement.addBatch();
+            }
+            insertStatement.executeBatch();
+        } catch (SQLException e) {
+            System.out.println("Error processing batch: " + e.getMessage());
         }
     }
 

@@ -49,7 +49,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
                         tradeMap.put(tradeId, randomQueue);
                     }
                 }
-                System.out.println(tradeMap.size()); // since all tradeIds is unique
+//                System.out.println(tradeMap.size()); // since all tradeIds is unique
             }
         } catch (IOException e) {
             System.out.println("Error while reading file in distributeMap: "+e.getMessage());

@@ -54,13 +54,13 @@ public class ChunkGeneratorService {
     private synchronized void writeChunkToFile(List<String> lines, int index) throws IOException {
         String chunkFileName = "/Users/akm/pavani/JavaBootcamp/resources/trade_chunks/trade_chunk" + index + ".csv";
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(chunkFileName))) {
-            synchronized (chunksDataFileNames){
-                chunksDataFileNames.add(chunkFileName);
-            }
             for (String line : lines) {
                 bufferedWriter.write(line);
                 bufferedWriter.newLine();
             }
         }
+            synchronized (chunksDataFileNames){
+                chunksDataFileNames.add(chunkFileName);
+            }
     }
 }

@@ -35,16 +35,26 @@ public class ChunkProcessorService implements ChunkProcessor {
 
     public void chunksProcessor() {
         try {
+            int emptyPollCount = 0;
+            int maxEmptyPolls = 5;
+            String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
+
             while (true){
-                String file = chunkQueue.poll(60, TimeUnit.SECONDS);
+//                String file = chunkQueue.poll(2, TimeUnit.SECONDS);
+                String file = chunkQueue.poll(500, TimeUnit.MILLISECONDS);
                 if(file==null){
-                    break;
+                    emptyPollCount++;
+                    if (emptyPollCount >= maxEmptyPolls) {
+                        System.out.println("No more files to process, exiting...");
+                        break;
+                    }
+                    continue;
                 }
+                emptyPollCount = 0;
                 executor.submit(() -> {
                     try {
                         processChunk(file);
                         if(useMap){
-                            String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
                             if(criteria.equals("tradeId")){ //10k
                                 tradeDistributorMap.distributeMapWithTradeId(file);
                             } else if (criteria.equals("accountNumber")) { //9992
@@ -62,22 +72,24 @@ public class ChunkProcessorService implements ChunkProcessor {
                 });
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            System.out.println("Error in chunk processor: " + e.getMessage());
+            e.printStackTrace();
         }
-//        finally {
-//            executor.shutdown();
-//            try {
-//                if (!executor.awaitTermination(20, TimeUnit.SECONDS)) {
-//                    executor.shutdownNow();  // Forcibly terminate if needed
-//                }
-//            } catch (InterruptedException e) {
-//                executor.shutdownNow();
-//                Thread.currentThread().interrupt();
-//            }
-//                if (dataSource != null && !dataSource.isClosed()) {
-//                    dataSource.close();
-//                }
-//        }
+        finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(35, TimeUnit.SECONDS)) {
+//                if (!executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+                        executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+                if (dataSource != null && !dataSource.isClosed()) {
+                    dataSource.close();
+                }
+        }
     }
 
     public void processChunk(String file) throws IOException {
