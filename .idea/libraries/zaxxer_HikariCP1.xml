@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="zaxxer.HikariCP1" type="repository">
+    <properties maven-id="com.zaxxer:HikariCP:5.1.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/HikariCP-5.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.7.36.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/HikariCP-5.1.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.7.36-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
