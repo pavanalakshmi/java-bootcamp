@@ -78,8 +78,8 @@ public class ChunkProcessorService implements ChunkProcessor {
         finally {
             executor.shutdown();
             try {
-                if (!executor.awaitTermination(35, TimeUnit.SECONDS)) {
-//                if (!executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+//                if (!executor.awaitTermination(35, TimeUnit.SECONDS)) {
+                if (!executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
                         executor.shutdownNow();
                 }
             } catch (InterruptedException e) {
