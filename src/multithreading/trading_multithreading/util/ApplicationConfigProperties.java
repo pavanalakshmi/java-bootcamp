@@ -81,6 +81,11 @@ public class ApplicationConfigProperties {
         return properties.getProperty("distributionLogic.criteria");
     }
 
+    public String loadQueueCriteria(){
+        Properties properties = loadProperties();
+        return properties.getProperty("queueCriteria");
+    }
+
     public String loadAlgorithm(){
         Properties properties = loadProperties();
         return properties.getProperty("distributionMapLogic.algorithm");

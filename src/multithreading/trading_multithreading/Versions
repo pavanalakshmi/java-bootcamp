@@ -2,11 +2,10 @@
 
 timestamp -
 Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
-create 1 million data set for trades
-
 --------
 version-3
 make full use of countDownLatch, CyclicBarrier,Semaphore features
+
 Version-4 will use RabbitMQ and Hibernate technologies
 Version-5 will use Kafka ..
 -------------------------------------

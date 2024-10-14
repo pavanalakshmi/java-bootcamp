@@ -10,5 +10,6 @@
     <orderEntry type="library" name="mysql-connector-j-9.0.0" level="project" />
     <orderEntry type="library" name="zaxxer.HikariCP1" level="project" />
     <orderEntry type="library" name="junit" level="project" />
+    <orderEntry type="library" name="rabbitmq.amqp.client" level="project" />
   </component>
 </module>
