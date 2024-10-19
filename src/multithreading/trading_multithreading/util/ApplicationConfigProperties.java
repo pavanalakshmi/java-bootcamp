@@ -76,14 +76,39 @@ public class ApplicationConfigProperties {
         }
     }
 
+    public boolean useHibernate(){
+        Properties properties = loadProperties();
+        String useHibernate = properties.getProperty("useHibernate");
+        if(useHibernate.equals("true")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean useStoredProcedure(){
+        Properties properties = loadProperties();
+        String useStoredProcedure = properties.getProperty("useStoredProcedure");
+        if(useStoredProcedure.equals("true")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean useRabbitMQ(){
+        Properties properties = loadProperties();
+        String useRabbitMQ = properties.getProperty("useRabbitMQ");
+        if(useRabbitMQ.equals("true")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public String loadCriteriaTradeOrAccNo(){
         Properties properties = loadProperties();
         return properties.getProperty("distributionLogic.criteria");
-    }
-
-    public String loadQueueCriteria(){
-        Properties properties = loadProperties();
-        return properties.getProperty("queueCriteria");
     }
 
     public String loadAlgorithm(){

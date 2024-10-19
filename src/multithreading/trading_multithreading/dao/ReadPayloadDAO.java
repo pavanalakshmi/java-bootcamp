@@ -45,4 +45,20 @@ public class ReadPayloadDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public boolean isValidCUSIPSymbolHibernate(String cusip) {  // -----Update
+        String selectSQL = "SELECT symbol FROM SecuritiesReference where symbol = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement selectStatement = connection.prepareStatement(selectSQL)){
+            selectStatement.setString(1,cusip);
+            ResultSet rs = selectStatement.executeQuery();
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

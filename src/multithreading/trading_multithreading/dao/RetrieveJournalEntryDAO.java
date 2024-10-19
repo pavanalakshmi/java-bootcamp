@@ -30,4 +30,20 @@ public class RetrieveJournalEntryDAO {
         }
         return false;
     }
+
+    public boolean isJournalEntryExistHibernate(String accountNumber, String cusip){ // ----Update
+        String querySQL = "SELECT quantity FROM journal_entry WHERE account_number = ? AND CUSIP = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement insertStatement = connection.prepareStatement(querySQL)){
+            insertStatement.setString(1, accountNumber);
+            insertStatement.setString(2, cusip);
+            ResultSet resultSet = insertStatement.executeQuery();
+            if(resultSet.next()){
+                return resultSet.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
 }

@@ -27,7 +27,6 @@ public class Position {
         updatePositionsDAO = new UpdatePositionsDAO();
         insertToPositionsDAO = new InsertToPositionsDAO();
         retrievePositionsDataDAO = new RetrievePositionsDataDAO();
-
         applicationConfigProperties = new ApplicationConfigProperties();
         maxRetryCount = applicationConfigProperties.loadMaxRetryAttempts();
     }
@@ -47,7 +46,11 @@ public class Position {
                     int version = retrievePositionsDataDAO.getVersionFromPositions(accountNumber, connection, cusip);
                     int existingQuantity = retrievePositionsDataDAO.getQuantityFromPositions(accountNumber, connection, cusip);
                     if (version == -1) {
+                        if(applicationConfigProperties.useHibernate()){
+                            insertToPositionsDAO.insertToPositionsHibernate(accountNumber, cusip, newQuantity);
+                        } else{
                             insertToPositionsDAO.insertToPositions(accountNumber, cusip, newQuantity, connection);
+                        }
                     } else {
                         newQuantity = getNewQuantity(newQuantity, existingQuantity, direction);
                         int rowsAffected = updatePositionsDAO.updatePositions(accountNumber, newQuantity, connection, version, cusip);

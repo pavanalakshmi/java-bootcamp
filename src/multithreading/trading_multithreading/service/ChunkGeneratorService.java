@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class ChunkGeneratorService {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    ExecutorService chunkGeneratorExecutorService = Executors.newSingleThreadExecutor();
     private final List<String> chunksDataFileNames = new ArrayList<>();
+    Logger logger = Logger.getLogger(ChunkGeneratorService.class.getName());
 
     public List<String> generateChunks(int totalRows, List<String> lines, int chunksCount){
         int rowsPerChunk = totalRows / chunksCount;
@@ -30,7 +32,7 @@ public class ChunkGeneratorService {
                 chunkData.add(lines.get(i));
             }
             try {
-                executor.submit(() -> {
+                chunkGeneratorExecutorService.submit(() -> {
                     try {
                         writeChunkToFile(chunkData, index);
                     } catch (Exception e) {
@@ -38,12 +40,12 @@ public class ChunkGeneratorService {
                     }
                 });
             } catch (Exception e) {
-                System.out.println("Error in submitting executor: "+e);
+                logger.info("Error in submitting ChunkGeneratorExecutorService: "+e);
             }
         }
-        executor.shutdown();
+        chunkGeneratorExecutorService.shutdown();
         try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for all tasks to complete
+            chunkGeneratorExecutorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for all tasks to complete
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Task interrupted: " + e.getMessage());

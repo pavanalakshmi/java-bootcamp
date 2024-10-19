@@ -14,23 +14,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class ChunkProcessorService implements ChunkProcessor {
-    private final ExecutorService executor;
+    private final ExecutorService chunkProcessorExecutorService;
     private final InsertUpdatePayloadDAO insertPayloadDAO;
     HikariDataSource dataSource;
     TradeDistributorMapService tradeDistributorMap;
     TradeDistributionQueueService tradeDistributionQueue;
     static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
     private final LinkedBlockingQueue<String> chunkQueue;
-    boolean useMap;
 
     public ChunkProcessorService(LinkedBlockingQueue<String> chunkQueue, TradeDistributionQueueService tradeDistributionQueueService) {
         this.chunkQueue = chunkQueue;
-        executor = Executors.newFixedThreadPool(applicationConfigProperties.loadChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
+        chunkProcessorExecutorService = Executors.newFixedThreadPool(applicationConfigProperties.loadChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
         insertPayloadDAO = new InsertUpdatePayloadDAO();
         dataSource = HikariCPConfig.getDataSource();
         tradeDistributorMap = new TradeDistributorMapService();
         this.tradeDistributionQueue = tradeDistributionQueueService;
-        useMap = applicationConfigProperties.loadUseMap();
     }
 
     public void chunksProcessor() {
@@ -40,7 +38,6 @@ public class ChunkProcessorService implements ChunkProcessor {
             String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
 
             while (true){
-//                String file = chunkQueue.poll(2, TimeUnit.SECONDS);
                 String file = chunkQueue.poll(500, TimeUnit.MILLISECONDS);
                 if(file==null){
                     emptyPollCount++;
@@ -51,16 +48,15 @@ public class ChunkProcessorService implements ChunkProcessor {
                     continue;
                 }
                 emptyPollCount = 0;
-                executor.submit(() -> {
+                chunkProcessorExecutorService.submit(() -> {
                     try {
                         processChunk(file);
-                        if(useMap){
+                        if(applicationConfigProperties.loadUseMap()){
                             if(criteria.equals("tradeId")){ //10k
-                                tradeDistributorMap.distributeMapWithTradeId(file);
-                            } else if (criteria.equals("accountNumber")) { //9992
+                                tradeDistributorMap.distributeMapWithTradeId(file); // size - 9992
+                            } else if (criteria.equals("accountNumber")) {  // 9992
                                 tradeDistributorMap.distributeMapWithAccountNumber(file);
                             }
-//                            tradeDistributorMap.distributeMap(file); // size - 9992
                             tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
                         } else{
                             tradeDistributionQueue.distributeQueueWithoutMap(file);
@@ -76,14 +72,13 @@ public class ChunkProcessorService implements ChunkProcessor {
             e.printStackTrace();
         }
         finally {
-            executor.shutdown();
+            chunkProcessorExecutorService.shutdown();
             try {
-//                if (!executor.awaitTermination(35, TimeUnit.SECONDS)) {
-                if (!executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
-                        executor.shutdownNow();
+                if (!chunkProcessorExecutorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+                        chunkProcessorExecutorService.shutdownNow();
                 }
             } catch (InterruptedException e) {
-                executor.shutdownNow();
+                chunkProcessorExecutorService.shutdownNow();
                 Thread.currentThread().interrupt();
             }
                 if (dataSource != null && !dataSource.isClosed()) {
@@ -96,7 +91,11 @@ public class ChunkProcessorService implements ChunkProcessor {
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
-                insertPayloadDAO.insertIntoPayload(line);
+                if(applicationConfigProperties.useHibernate()){
+                    insertPayloadDAO.insertIntoPayloadHibernate(line);
+                } else{
+                    insertPayloadDAO.insertIntoPayload(line);
+                }
             }
         }
     }
