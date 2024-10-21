@@ -17,7 +17,7 @@ public class RawCopy {
  import java.util.Properties;
  import java.util.Scanner;
 
- public class Main {
+ public class org.pavani.Main {
  public static String filePath = "/Users/akm/pavani/JavaBootcamp/trades_sample_1000.csv";
  public static String securitiesFilePath = "/Users/akm/pavani/JavaBootcamp/securitiesReference.csv";
  public static double errorThreshold = 0.25;
@@ -187,8 +187,8 @@ public class RawCopy {
  import java.sql.SQLException;
  import java.util.Arrays;
 
- import static exception_handling.trading.Main.MAX_RETRY_ATTEMPTS;
- import static exception_handling.trading.Main.validateTradeData;
+ import static exception_handling.trading.org.pavani.Main.MAX_RETRY_ATTEMPTS;
+ import static exception_handling.trading.org.pavani.Main.validateTradeData;
 
  public class TradeProcessorService {
  public static int dbWriter(PreparedStatement insertStatement, Connection connection) throws SQLException {
@@ -270,7 +270,7 @@ public class RawCopy {
  import java.io.IOException;
  import java.sql.Connection;
  import java.sql.SQLException;
- import static exception_handling.trading.Main.*;
+ import static exception_handling.trading.org.pavani.Main.*;
 
  public class SecuritiesReader {
  public void readSecurities(String file) {
@@ -306,7 +306,7 @@ public class RawCopy {
  import java.sql.PreparedStatement;
  import java.sql.SQLException;
 
- import static exception_handling.trading.Main.executeBatch;
+ import static exception_handling.trading.org.pavani.Main.executeBatch;
 
  public class SecuritiesProcessorService {
  public static void processSecurities(Connection connection, BufferedReader fileReader) throws SQLException {
@@ -391,7 +391,7 @@ public class RawCopy {
  import java.sql.Connection;
  import java.sql.PreparedStatement;
  import java.sql.SQLException;
- import static exception_handling.trading.Main.*;
+ import static exception_handling.trading.org.pavani.Main.*;
 
  public class TradeFileReader {
  public void readTradeDataFromCSV(String filePath) throws HitErrorsThresholdException {

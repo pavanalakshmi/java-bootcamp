@@ -29,7 +29,7 @@ This package contains configuration files like database configurations,
 and possibly dependency injection configurations (if using Spring or other frameworks).
 -- HikariConfig
 
-5. Main Class
+5. org.pavani.Main Class
 The App.java is your main application class that can invoke the service methods to test the functionality.
 
 

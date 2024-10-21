@@ -16,9 +16,9 @@
         <mapping class="hibernate.entity.Department" />
         <mapping class="hibernate.entity.EmployeeDetails" />
         <mapping class="hibernate.entity.Student" />
-        <mapping class="multithreading.trading_multithreading.entity.JournalEntry" />
-        <mapping class="multithreading.trading_multithreading.entity.TradePayloads" />
-        <mapping class="multithreading.trading_multithreading.entity.Positions" />
+        <mapping class="org.pavani.multithreading.trading_multithreading.entity.JournalEntry" />
+        <mapping class="org.pavani.multithreading.trading_multithreading.entity.TradePayloads" />
+        <mapping class="org.pavani.multithreading.trading_multithreading.entity.Positions" />
 
     </session-factory>
 </hibernate-configuration>

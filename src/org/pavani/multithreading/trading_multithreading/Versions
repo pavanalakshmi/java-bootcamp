@@ -1,0 +1,72 @@
+// record
+
+timestamp -
+Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
+--------
+version-3
+make full use of countDownLatch, CyclicBarrier,Semaphore features
+
+Version-4 will use RabbitMQ and Hibernate technologies
+Version-5 will use Kafka ..
+-------------------------------------
+-------------------------------------
+
+Version1 -> main
+multiThreaded with ThreadPools - Done
+
+
+Version 1.1
+(does not use map) will bring up version1 in singleThreaded mode entirely using the properties
+and also it will remove the map (concurrentHashMap) in this version - figureNextQueue will give the same queueName everytime.
+.
+sonarlint clean, sout is fine
+build with interfaces that we discussed
+It will fully decoupled and Async Implementation - org.pavani.Main class will say chunkGenerator.start, chunkProcessor.start, tradeProcessor.start,
+chunkGenerator will send messages (with fileName) to a queue from where chunkProcessor will consume from.
+all properties will be in application.properties  -- tradeFilePath, numberOfChunks,:megaphone: tradeDistributionCriteria, chunkProcessorThreadPoolSize , tradeProcessorThreadPoolSize ,tradeProcessorQueueCount ,maxRetryCount , dbUserName ,dbPassword ,dbUrl
+the application should be able to switch between fully single Threaded to multi-Threaded with application property changes
+: Make sure you have retry and DLQ functionality added in this version
+: Add the columns in trade_payloads table
+ validity_status column = valid | invalid (to check if the trade line in the file is valid trade with all correct fields present and in the right format)
+ lookup_status column = pass | fail (to check if the security exists in the securities_reference table or not )
+je_status column = posted | not_posted (to show whether the trade got posted into JE table or not, initially it will be not_posted when trade is saved by the chunk processor in trade_payloads table, later the trade_processor will update it to posted if its been able to create journal entry successfully for a given trade_id )
+: figureTheNextQ method will work with the following properties for the trade distribution logic
+distributionLogic.useMap      = true / false
+distributionLogic.criteria        = tradeId / accountNumber
+distributionLogic.algorithm    = round-robin / random
+
+
+Version1.2 -- OptimisticLockingError Forced Generation Mode (does not use map)
+create 1 million data set for trades
+figureNextQ will give random QueueName everytime
+noOfQueues = 5, threadPoolSize for tradeProcessor=10
+
+
+
+version 2-stored-procedure updates:
+version -2 will not do Position Update in the same context of execution
+it will rather run a stored procedure every few seconds and pick the journal entries (by insert time stamp) with NON_POSTED status
+and post them and then update them to POSTED status
+.
+The Trade processing half of the architecture is being split into two pieces
+First half will be done in Java
+First half will load the payload from trade_payloads table using trade_id it received from the trades queue
+then it will look it up in the securities_reference table
+if the 1. or 2. fails , put the trade_id into dead letter queue (we cannot fix anything by retrying this)
+Second half will be done in Stored Procedure
+It will call stored procedure to insert the journal entry into the journal_entries table and positions table
+if the SP (stored procedure) succeeds on JE insert step , it will proceed to do upsert into Positions table while doing optimistic locking and then get out with message POSITON_UPDATE_DONE
+if the SP fails on the insert JE step, it will return JE_INSERT_FAILED, the java side will retry two more times before sending to DLQ
+if the SP fails on the position update , it will return appropriate error like POSITION_UPDATE_FAILED_IN_OPTIMISTIC_LOCKING and then java side will retry two more times before sending to DLQ
+SP will do both insert JE and upsert Position in a transaction, which will fail or succeed atomically
+
+
+version-3
+make full use of countDownLatch, CyclicBarrier,Semaphore features
+
+Version-4 will use RabbitMQ and Hibernate technologies
+Version-5 will use Kafka ..
+
+
+
+

@@ -159,7 +159,7 @@ You must implement the following methods in `MyArrayList`:
 ### Example:
 
 ```java
-public class Main {
+public class org.pavani.Main {
     public static void main(String[] args) {
         MyArrayList<String> list = new MyArrayList<>();
 

@@ -48,7 +48,7 @@ Create a generic class `Container` that can hold a single object of any type. Th
 4. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Container<String> stringContainer = new Container<>();
            stringContainer.setValue("Hello");
@@ -122,7 +122,7 @@ Create a generic class `Triple` that can hold three objects of any type. The cla
 5. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Triple<Integer, String, Boolean> triple = new Triple<>(1, "Hello", true);
            System.out.println("First: " + triple.getFirst()); // Output: 1
@@ -197,7 +197,7 @@ Create a generic class `Pair` that can hold a pair of objects of any type. The c
 5. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Pair<String, Integer> pair = new Pair<>("Age", 25);
            System.out.println("First: " + pair.getFirst()); // Output: Age
@@ -264,7 +264,7 @@ Create a generic class `Box` that can hold an object of any type and provide a m
 5. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Box<Integer> box1 = new Box<>(10);
            Box<Integer> box2 = new Box<>(20);
@@ -329,7 +329,7 @@ Write a generic method `findMaximum` that accepts three parameters of the same t
 2. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            System.out.println(findMaximum(3, 7, 5)); // Output: 7
            System.out.println(findMaximum("apple", "banana", "pear")); // Output: pear
@@ -362,7 +362,7 @@ Write a generic method `swapElements` that swaps the positions of two elements i
 2. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Integer[] numbers = {1, 2, 3, 4};
            swapElements(numbers, 1, 3);
@@ -401,7 +401,7 @@ Write a generic method `printArray` that prints all the elements of an array. Th
 2. **Usage Example**:
 
    ```java
-   public class Main {
+   public class org.pavani.Main {
        public static void main(String[] args) {
            Integer[] numbers = {1, 2, 3, 4};
            printArray(numbers); // Output: 1 2 3 4 

@@ -9,7 +9,7 @@ Void - reserved type in java
 MAIN - Every java code should have 1 java function - main - entry point to our programs; they execute whenever we run our java code.
 functions don't exist on their own; they should always belong to a class.
 CLASS -  Container for one or more related functions. 
-Every java function should have 1 Class which contains main function - class Main{Functions...}
+Every java function should have 1 Class which contains main function - class org.pavani.Main{Functions...}
 
 METHOD - Method is a function part of class.
 In python, functions exist outside class.
