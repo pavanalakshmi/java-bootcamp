@@ -9,7 +9,10 @@ import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeoutException;
@@ -19,13 +22,13 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
 
     private final List<LinkedBlockingQueue<String>> queues;
     Map<String, LinkedBlockingQueue<String>> resultQueues;
-    ApplicationConfigProperties applicationConfigProperties;
     ConnectionFactory factory;
     int roundRobinIndex = 0;
     RabbitMQConfig rabbitMQConfig;
+    private static ApplicationConfigProperties applicationConfigProperties;
 
     public TradeDistributionQueueService(int numberOfQueues) {
-        applicationConfigProperties = new ApplicationConfigProperties();
+        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         queues = new ArrayList<>(numberOfQueues);
         resultQueues = new HashMap<>();
         for (int i = 0; i < numberOfQueues; i++) {
@@ -77,7 +80,7 @@ public class TradeDistributionQueueService implements TradeDistributionQueue {
     }
 
     private void processQueue(int queueIndex, String tradeId) {
-        if(applicationConfigProperties.useRabbitMQ()){
+        if(applicationConfigProperties.getUseRabbitMQ()){
             // Producer class
             // Establish connection and create channel
             try (Connection connection = factory.newConnection();

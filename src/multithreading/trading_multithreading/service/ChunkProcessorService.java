@@ -2,7 +2,8 @@ package multithreading.trading_multithreading.service;
 
 import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
-import multithreading.trading_multithreading.dao.InsertUpdatePayloadDAO;
+import multithreading.trading_multithreading.dao.PayloadDAO;
+import multithreading.trading_multithreading.factory.BeanFactory;
 import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.io.BufferedReader;
@@ -15,27 +16,28 @@ import java.util.concurrent.TimeUnit;
 
 public class ChunkProcessorService implements ChunkProcessor {
     private final ExecutorService chunkProcessorExecutorService;
-    private final InsertUpdatePayloadDAO insertPayloadDAO;
     HikariDataSource dataSource;
     TradeDistributorMapService tradeDistributorMap;
     TradeDistributionQueueService tradeDistributionQueue;
-    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+    private static ApplicationConfigProperties applicationConfigProperties;
     private final LinkedBlockingQueue<String> chunkQueue;
+    private static PayloadDAO payloadDAO;
 
     public ChunkProcessorService(LinkedBlockingQueue<String> chunkQueue, TradeDistributionQueueService tradeDistributionQueueService) {
         this.chunkQueue = chunkQueue;
-        chunkProcessorExecutorService = Executors.newFixedThreadPool(applicationConfigProperties.loadChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
-        insertPayloadDAO = new InsertUpdatePayloadDAO();
+        applicationConfigProperties = ApplicationConfigProperties.getInstance();
+        chunkProcessorExecutorService = Executors.newFixedThreadPool(applicationConfigProperties.getChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
         dataSource = HikariCPConfig.getDataSource();
         tradeDistributorMap = new TradeDistributorMapService();
         this.tradeDistributionQueue = tradeDistributionQueueService;
+        payloadDAO = BeanFactory.getPayloadDAO();
     }
 
     public void chunksProcessor() {
         try {
             int emptyPollCount = 0;
             int maxEmptyPolls = 5;
-            String criteria = applicationConfigProperties.loadCriteriaTradeOrAccNo();
+            String criteria = applicationConfigProperties.getDistributionLogicCriteria();
 
             while (true){
                 String file = chunkQueue.poll(500, TimeUnit.MILLISECONDS);
@@ -51,7 +53,7 @@ public class ChunkProcessorService implements ChunkProcessor {
                 chunkProcessorExecutorService.submit(() -> {
                     try {
                         processChunk(file);
-                        if(applicationConfigProperties.loadUseMap()){
+                        if(applicationConfigProperties.getUseMap()){
                             if(criteria.equals("tradeId")){ //10k
                                 tradeDistributorMap.distributeMapWithTradeId(file); // size - 9992
                             } else if (criteria.equals("accountNumber")) {  // 9992
@@ -91,11 +93,7 @@ public class ChunkProcessorService implements ChunkProcessor {
         String line;
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
-                if(applicationConfigProperties.useHibernate()){
-                    insertPayloadDAO.insertIntoPayloadHibernate(line);
-                } else{
-                    insertPayloadDAO.insertIntoPayload(line);
-                }
+                payloadDAO.insertIntoPayload(line);
             }
         }
     }

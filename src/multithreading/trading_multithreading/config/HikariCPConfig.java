@@ -8,10 +8,10 @@ import java.sql.Connection;
 // Configure HikariCP connection pool
 public class HikariCPConfig {
     private static HikariDataSource dataSource;
-    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
-    private static final String DB_USERNAME = applicationConfigProperties.loadDbUserName();
-    private static final String DB_PASSWORD = applicationConfigProperties.loadDbPasswords();
-    private static final String DB_URL = applicationConfigProperties.loadDbUrlFromConfigProperties();
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
+    private static final String DB_USERNAME = applicationConfigProperties.getDbUserName();
+    private static final String DB_PASSWORD = applicationConfigProperties.getDbPasswords();
+    private static final String DB_URL = applicationConfigProperties.getDbUrl();
 
     private HikariCPConfig() {
         // private constructor to prevent instantiation

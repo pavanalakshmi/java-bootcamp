@@ -12,7 +12,7 @@ public class ReadPayloadDAO {
     HikariDataSource dataSource = HikariCPConfig.getDataSource();
 
     public String readPayload(String tradeId) {
-        String payloadString = "";
+        String payloadString;
         String selectSQL = "SELECT payload FROM trade_payloads where trade_id = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStatement = connection.prepareStatement(selectSQL)) {

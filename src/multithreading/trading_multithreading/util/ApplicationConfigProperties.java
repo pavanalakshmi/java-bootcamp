@@ -9,110 +9,121 @@ import java.util.Properties;
 
 public class ApplicationConfigProperties {
     private static final String FILE_PATH = "/Users/akm/pavani/JavaBootcamp/resources/trade.properties";
-    private static final String ERROR_MESSAGE = "Error while reading application.properties file ";
+    private static final String ERROR_MESSAGE = "Error while reading application.properties file";
+    private static ApplicationConfigProperties instance;
 
-    private Properties loadProperties(){
+    private String fileName;
+    private int chunkSize;
+    private String dbUserName;
+    private String dbPasswords;
+    private String dbUrl;
+    private int maxRetryAttempts;
+    private int chunkProcessorThreadPoolSize;
+    private int tradeProcessorThreadPoolSize;
+    private int tradeProcessorQueueCount;
+    private String distributionLogicCriteria;
+    private String persistenceTechnology;
+    private String algorithm;
+    private String useMap;
+    private String useStoredProcedure;
+    private String useRabbitMQ;
+
+    private ApplicationConfigProperties() {
+        loadProperties();
+    }
+
+    public static synchronized ApplicationConfigProperties getInstance() {
+        if (instance == null) {
+            instance = new ApplicationConfigProperties();
+        }
+        return instance;
+    }
+
+    private void loadProperties(){
         Properties properties = new Properties();
         try (InputStream input = new FileInputStream(FILE_PATH)) {
             properties.load(input);
+            fileName = properties.getProperty("file.path");
+            chunkSize = Integer.parseInt(properties.getProperty("chunks.count"));
+            dbUserName = properties.getProperty("dbUserName");
+            dbPasswords = properties.getProperty("dbPassword");
+            dbUrl = properties.getProperty("dbUrl");
+            maxRetryAttempts = Integer.parseInt(properties.getProperty("maxRetryCount"));
+            chunkProcessorThreadPoolSize = Integer.parseInt(properties.getProperty("chunkProcessorThreadPoolSize"));
+            tradeProcessorThreadPoolSize = Integer.parseInt(properties.getProperty("tradeProcessorThreadPoolSize"));
+            tradeProcessorQueueCount = Integer.parseInt(properties.getProperty("tradeProcessorQueueCount"));
+            distributionLogicCriteria = properties.getProperty("distributionLogic.criteria");
+            persistenceTechnology = properties.getProperty("persistence.technology");
+            algorithm = properties.getProperty("distributionMapLogic.algorithm");
+            useMap = properties.getProperty("distributionLogic.useMap");
+            useStoredProcedure = properties.getProperty("useStoredProcedure");
+            useRabbitMQ = properties.getProperty("useRabbitMQ");
+
+
         } catch (IOException e) {
             throw new ConfigFileReadException(ERROR_MESSAGE+e.getMessage());
         }
-        return properties;
     }
 
-    public String loadFilePath() {
-        Properties properties = loadProperties();
-        return properties.getProperty("file.path");
+
+    public String getFileName() {
+        return fileName;
     }
 
-    public int loadChunkSize() {
-        Properties properties = loadProperties();
-        return Integer.parseInt(properties.getProperty("chunks.count"));
+    public int getChunkSize() {
+        return chunkSize;
     }
 
-    public String loadDbUserName() {
-        Properties properties = loadProperties();
-        return properties.getProperty("dbUserName");
+    public String getDbUserName() {
+        return dbUserName;
     }
 
-    public String loadDbPasswords() {
-        Properties properties = loadProperties();
-        return properties.getProperty("dbPassword");
+    public String getDbPasswords() {
+        return dbPasswords;
     }
 
-    public String loadDbUrlFromConfigProperties() {
-        Properties properties = loadProperties();
-        return properties.getProperty("dbUrl");
+    public int getChunkProcessorThreadPoolSize() {
+        return chunkProcessorThreadPoolSize;
     }
 
-    public int loadMaxRetryAttempts() {
-        Properties properties = loadProperties();
-        return Integer.parseInt(properties.getProperty("maxRetryCount"));
+    public int getTradeProcessorThreadPoolSize() {
+        return tradeProcessorThreadPoolSize;
     }
 
-    public int loadChunkProcessorThreadPoolSize() {
-        Properties properties = loadProperties();
-        return Integer.parseInt(properties.getProperty("chunkProcessorThreadPoolSize"));
+    public int getTradeProcessorQueueCount() {
+        return tradeProcessorQueueCount;
     }
 
-    public int loadTradeProcessorThreadPoolSize() {
-        Properties properties = loadProperties();
-        return Integer.parseInt(properties.getProperty("tradeProcessorThreadPoolSize"));
+    public String getDbUrl() {
+        return dbUrl;
     }
 
-    public int loadTradeProcessorQueueCount() {
-        Properties properties = loadProperties();
-        return Integer.parseInt(properties.getProperty("tradeProcessorQueueCount"));
+    public int getMaxRetryAttempts() {
+        return maxRetryAttempts;
     }
 
-    public boolean loadUseMap(){
-        Properties properties = loadProperties();
-        String useMap = properties.getProperty("distributionLogic.useMap");
-        if(useMap.equals("true")){
-            return true;
-        } else {
-            return false;
-        }
+    public String getDistributionLogicCriteria() {
+        return distributionLogicCriteria;
     }
 
-    public boolean useHibernate(){
-        Properties properties = loadProperties();
-        String useHibernate = properties.getProperty("useHibernate");
-        if(useHibernate.equals("true")){
-            return true;
-        } else {
-            return false;
-        }
+    public String getAlgorithm() {
+        return algorithm;
     }
 
-    public boolean useStoredProcedure(){
-        Properties properties = loadProperties();
-        String useStoredProcedure = properties.getProperty("useStoredProcedure");
-        if(useStoredProcedure.equals("true")){
-            return true;
-        } else {
-            return false;
-        }
+    public String getPersistenceTechnology() {
+        return persistenceTechnology;
     }
 
-    public boolean useRabbitMQ(){
-        Properties properties = loadProperties();
-        String useRabbitMQ = properties.getProperty("useRabbitMQ");
-        if(useRabbitMQ.equals("true")){
-            return true;
-        } else {
-            return false;
-        }
+    public Boolean getUseMap() {
+        return useMap.equalsIgnoreCase("true");
     }
 
-    public String loadCriteriaTradeOrAccNo(){
-        Properties properties = loadProperties();
-        return properties.getProperty("distributionLogic.criteria");
+    public Boolean getUseStoredProcedure() {
+        return useStoredProcedure.equalsIgnoreCase("true");
     }
 
-    public String loadAlgorithm(){
-        Properties properties = loadProperties();
-        return properties.getProperty("distributionMapLogic.algorithm");
+    public Boolean getUseRabbitMQ() {
+        return useRabbitMQ.equalsIgnoreCase("true");
     }
+
 }

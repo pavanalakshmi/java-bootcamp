@@ -13,13 +13,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class MultiThreadTradeRunner {
 
     public static void main(String[] args) {
-        ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
-        String filePath = applicationConfigProperties.loadFilePath();
+        ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
+        String filePath = applicationConfigProperties.getFileName();
+
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         LinkedBlockingQueue<String> chunkQueue = new LinkedBlockingQueue<>();
-        TradeDistributionQueueService tradeDistributionQueueService = new TradeDistributionQueueService(applicationConfigProperties.loadTradeProcessorQueueCount());
+        TradeDistributionQueueService tradeDistributionQueueService = new TradeDistributionQueueService(applicationConfigProperties.getTradeProcessorQueueCount());
 
         ReadTradeFile readTradeFile = new ReadTradeFile(chunkQueue);
         ChunkProcessorService chunkProcessor = new ChunkProcessorService(chunkQueue, tradeDistributionQueueService);
@@ -45,6 +46,7 @@ public class MultiThreadTradeRunner {
             tradeProcessorThread.join();
 
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             e.printStackTrace();
         }
         long endTime = System.currentTimeMillis();

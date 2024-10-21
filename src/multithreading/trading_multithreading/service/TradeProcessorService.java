@@ -7,8 +7,10 @@ import com.rabbitmq.client.DeliverCallback;
 import com.zaxxer.hikari.HikariDataSource;
 import multithreading.trading_multithreading.config.HikariCPConfig;
 import multithreading.trading_multithreading.config.RabbitMQConfig;
-import multithreading.trading_multithreading.dao.InsertJournalEntryDAO;
+import multithreading.trading_multithreading.dao.JournalEntryDAO;
 import multithreading.trading_multithreading.dao.ReadPayloadDAO;
+import multithreading.trading_multithreading.factory.BeanFactory;
+import multithreading.trading_multithreading.model.Trade;
 import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.sql.CallableStatement;
@@ -23,8 +25,8 @@ public class TradeProcessorService implements TradeProcessor {
     HikariDataSource dataSource;
     Position position;
     ReadPayloadDAO readPayloadDAO;
-    InsertJournalEntryDAO insertJournalEntryDAO;
-    ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+    private static JournalEntryDAO journalEntryDAO;
+    private static ApplicationConfigProperties applicationConfigProperties;
     Map<String, LinkedBlockingQueue<String>> map;
     int queueCount;
     int maxRetryCount;
@@ -38,26 +40,27 @@ public class TradeProcessorService implements TradeProcessor {
         dataSource = HikariCPConfig.getDataSource();
         position = new Position();
         readPayloadDAO = new ReadPayloadDAO();
-        insertJournalEntryDAO = new InsertJournalEntryDAO();
-        queueCount = applicationConfigProperties.loadTradeProcessorQueueCount();
+        applicationConfigProperties = ApplicationConfigProperties.getInstance();
+        queueCount = applicationConfigProperties.getTradeProcessorQueueCount();
         map = queuesMap;
-        executor = Executors.newFixedThreadPool(applicationConfigProperties.loadTradeProcessorThreadPoolSize());
-        maxRetryCount = applicationConfigProperties.loadMaxRetryAttempts();
+        executor = Executors.newFixedThreadPool(applicationConfigProperties.getTradeProcessorThreadPoolSize());
+        maxRetryCount = applicationConfigProperties.getMaxRetryAttempts();
         retryMap = new ConcurrentHashMap<>();
         deadLetterQueue = new LinkedBlockingQueue<>();
         rabbitMQConfig = new RabbitMQConfig();
         factory = rabbitMQConfig.connect();
+        journalEntryDAO = BeanFactory.getJournalEntryDAO();
     }
 
     public void processTrade() {
-        if (applicationConfigProperties.useRabbitMQ()) {
+        if (applicationConfigProperties.getUseRabbitMQ()) {
             processRabbitMQLogic();
         } else {
             for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
                 LinkedBlockingQueue<String> queue = entry.getValue();
                 executor.submit(() -> {
                     try {
-                        if (applicationConfigProperties.useStoredProcedure()){
+                        if (applicationConfigProperties.getUseStoredProcedure()){
                             processTradeQueue(queue);
                         } else{
                             processTradeQueueWithoutStoredProcedure(queue);
@@ -82,17 +85,16 @@ public class TradeProcessorService implements TradeProcessor {
     }
 
     public void processRabbitMQLogic() {
-        ExecutorService executorService = Executors.newFixedThreadPool(applicationConfigProperties.loadTradeProcessorThreadPoolSize());
+        ExecutorService executorService = Executors.newFixedThreadPool(applicationConfigProperties.getTradeProcessorThreadPoolSize());
         // Submit the consumer task
         Future<Void> consumerFuture = null;
         for (int i = 0; i <= queueCount; i++) {
             RabbitMQConsumerCallable consumerTask = new RabbitMQConsumerCallable("trading_queue_"+i);
             consumerFuture = executorService.submit(consumerTask);
         }
-        // Register a shutdown hook to catch Ctrl-C (SIGINT) and shutdown the ChunkGeneratorExecutorService gracefully
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutdown signal received. Stopping consumer...");
-            executorService.shutdownNow(); // Issue shutdown to stop the thread
+            executorService.shutdownNow();
             try {
                 if (!executorService.isTerminated()) {
                     executorService.awaitTermination(5, TimeUnit.SECONDS);
@@ -104,9 +106,8 @@ public class TradeProcessorService implements TradeProcessor {
             System.out.println("Consumer stopped.");
         }));
 
-        // Keep the main thread alive until shutdown is triggered
         try {
-            consumerFuture.get(); // Block until the consumer thread completes or is interrupted
+            consumerFuture.get();
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
             System.out.println("Exception while waiting for consumer to finish: " + e.getMessage());
@@ -138,10 +139,12 @@ public class TradeProcessorService implements TradeProcessor {
             String accountNumber;
             String payload = readPayloadDAO.readPayload(tradeId);
             String[] payloadData = payload.split(",");
-            accountNumber = payloadData[2];
-            String cusip = payloadData[3];
-            String direction = payloadData[4];
-            int quantity = Integer.parseInt(payloadData[5]);
+
+            Trade trade = new Trade(payloadData[2], payloadData[3], payloadData[4], Integer.parseInt(payloadData[5]), tradeId);
+            accountNumber = trade.accountNumber();
+            String cusip = trade.cusip();
+            String direction = trade.direction();
+            int quantity = trade.quantity();
 
             if (readPayloadDAO.isValidCUSIPSymbol(cusip)) {
                 callableStatement.setString(1, accountNumber);
@@ -191,28 +194,18 @@ public class TradeProcessorService implements TradeProcessor {
 
     private void processTradeQueueWithoutStoredProcedure(LinkedBlockingQueue<String> queue) throws InterruptedException, SQLException {
         String tradeId;
-        String accountNumber;
         String cusip;
-        String direction;
-        int quantity;
         while ((tradeId = queue.poll(2, TimeUnit.SECONDS)) != null) {
             if (tradeId.equals("END")) {
                 return;
             }
             String payload = readPayloadDAO.readPayload(tradeId);
             String[] payloadData = payload.split(",");
-            accountNumber = payloadData[2];
-            cusip = payloadData[3];
-            direction = payloadData[4];
-            quantity = Integer.parseInt(payloadData[5]);
+            Trade trade = new Trade(payloadData[2], payloadData[3], payloadData[4], Integer.parseInt(payloadData[5]), tradeId);
+            cusip = trade.cusip();
             if (readPayloadDAO.isValidCUSIPSymbol(cusip)) {
-                if(applicationConfigProperties.useHibernate()){
-                    insertJournalEntryDAO.insertToJournalEntryHibernate(accountNumber, cusip, direction, quantity, tradeId);
-                    position.upsertPositions(accountNumber, cusip, direction, quantity);
-                } else{
-                    insertJournalEntryDAO.insertToJournalEntry(accountNumber, cusip, direction, quantity, tradeId);
-                    position.upsertPositions(accountNumber, cusip, direction, quantity);
-                }
+                journalEntryDAO.insertToJournalEntry(trade);
+                position.upsertPositions(trade);
             }
         }
     }

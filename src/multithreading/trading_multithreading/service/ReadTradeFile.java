@@ -14,10 +14,11 @@ public class ReadTradeFile {
     ChunkGeneratorService chunkGenerator;
     List<String> chunkFileNames;
     LinkedBlockingQueue<String> chunkQueue;
+    private static ApplicationConfigProperties applicationConfigProperties;
 
     public ReadTradeFile( LinkedBlockingQueue<String> chunkQueue ) {
-        ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
-        chunksCount = applicationConfigProperties.loadChunkSize();
+        applicationConfigProperties = ApplicationConfigProperties.getInstance();
+        chunksCount = applicationConfigProperties.getChunkSize();
         chunkGenerator = new ChunkGeneratorService();
         this.chunkQueue = chunkQueue;
     }

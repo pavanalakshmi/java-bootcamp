@@ -4,10 +4,14 @@ import exception_handling.trading.exception.HitInsertErrorsThresholdException;
 import exception_handling.trading.exception.InvalidThresholdValueException;
 import exception_handling.trading.util.SecuritiesReader;
 import exception_handling.trading.util.TradeFileReader;
-import multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
-import java.io.*;
-import java.sql.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
@@ -21,8 +25,9 @@ public class Main {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     public static final String ERROR_LOG_PATH = "error_log.txt"; // Path for logging errors
 
-    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
-    public static final int MAX_RETRY_ATTEMPTS = applicationConfigProperties.loadMaxRetryAttempts(); // Retry insertion up to 3 times
+//    static ApplicationConfigProperties applicationConfigProperties = new ApplicationConfigProperties();
+//    public static final int MAX_RETRY_ATTEMPTS = applicationConfigProperties.loadMaxRetryAttempts(); // Retry insertion up to 3 times
+    public static final int MAX_RETRY_ATTEMPTS = 3;
 
     public static void validateTradeData(String[] tradeData) throws ParseException {
         if(tradeData.length!=6){

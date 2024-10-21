@@ -15,7 +15,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
     ConcurrentMap<String, String> tradeMap;
     private Random random;
     private int queueIndex;
-    ApplicationConfigProperties applicationConfigProperties;
+    private static ApplicationConfigProperties applicationConfigProperties;
     private final List<String> listOfQueues;
 
     public ConcurrentMap<String, String> getTradeMap() {
@@ -26,8 +26,8 @@ public class TradeDistributorMapService implements TradeDistributionMap {
         tradeMap = new ConcurrentHashMap<>();
         listOfQueues = new ArrayList<>();
         random = new Random();
-        applicationConfigProperties = new ApplicationConfigProperties();
-        int queueCount = applicationConfigProperties.loadTradeProcessorQueueCount();
+        applicationConfigProperties = ApplicationConfigProperties.getInstance();
+        int queueCount = applicationConfigProperties.getTradeProcessorQueueCount();
         queueIndex=1;
         for(int i=1;i<=queueCount;i++){
             listOfQueues.add("q"+i);
@@ -36,7 +36,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
 
     public synchronized void distributeMapWithTradeId(String file){
         String line;
-        String algorithm = applicationConfigProperties.loadAlgorithm();
+        String algorithm = applicationConfigProperties.getAlgorithm();
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
                 String tradeId = line.split(",")[0];
@@ -58,7 +58,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
 
     public synchronized void distributeMapWithAccountNumber(String file){
         String line;
-        String algorithm = applicationConfigProperties.loadAlgorithm();
+        String algorithm = applicationConfigProperties.getAlgorithm();
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while ((line = fileReader.readLine()) != null) {
                 String accountNumber = line.split(",")[2];
