@@ -1,22 +1,25 @@
 package org.pavani.multithreading.trading_multithreading.dao.hibernate;
 
-import org.pavani.multithreading.trading_multithreading.dao.PositionsDAO;
-import org.pavani.multithreading.trading_multithreading.entity.Positions;
-import org.pavani.multithreading.trading_multithreading.model.Trade;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
+import org.pavani.multithreading.trading_multithreading.config.HibernateConfig;
+import org.pavani.multithreading.trading_multithreading.dao.PositionsDAO;
+import org.pavani.multithreading.trading_multithreading.entity.Positions;
+import org.pavani.multithreading.trading_multithreading.model.Trade;
 
 import javax.persistence.Query;
 import java.sql.Connection;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class HibernatePositionsDAO implements PositionsDAO {
     SessionFactory factory;
     private static HibernatePositionsDAO instance;
+    Logger logger = Logger.getLogger(HibernatePositionsDAO.class.getName());
 
     public HibernatePositionsDAO() {
-        factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(Positions.class).buildSessionFactory();
+        factory = HibernateConfig.getSessionFactory();
     }
 
     public static synchronized HibernatePositionsDAO getInstance(){
@@ -37,13 +40,13 @@ public class HibernatePositionsDAO implements PositionsDAO {
             positions.setCusip(trade.cusip());
             positions.setPosition(trade.quantity());
             positions.setVersion(0);
-            session.save(positions);
+            session.persist(positions);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            logger.warning("Stack trace: "+ Arrays.toString(e.getStackTrace()));
         } finally {
             if (session != null) {
                 session.close();

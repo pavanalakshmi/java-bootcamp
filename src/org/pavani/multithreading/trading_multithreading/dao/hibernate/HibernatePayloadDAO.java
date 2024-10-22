@@ -1,34 +1,28 @@
 package org.pavani.multithreading.trading_multithreading.dao.hibernate;
 
-import com.zaxxer.hikari.HikariDataSource;
-import org.pavani.multithreading.trading_multithreading.config.HikariCPConfig;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.pavani.multithreading.trading_multithreading.config.HibernateConfig;
 import org.pavani.multithreading.trading_multithreading.dao.PayloadDAO;
 import org.pavani.multithreading.trading_multithreading.dao.ReadPayloadDAO;
 import org.pavani.multithreading.trading_multithreading.dao.RetrieveJournalEntryDAO;
 import org.pavani.multithreading.trading_multithreading.entity.TradePayloads;
-import org.pavani.multithreading.trading_multithreading.service.TradePayload;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 
 import javax.persistence.Query;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public class HibernatePayloadDAO implements PayloadDAO {
-    HikariDataSource dataSource;
     ReadPayloadDAO readPayloadDAO;
     RetrieveJournalEntryDAO retrieveJournalEntryDAO;
     SessionFactory factory;
     private static HibernatePayloadDAO instance;
+    Logger logger = Logger.getLogger(HibernatePayloadDAO.class.getName());
 
     public HibernatePayloadDAO() {
         readPayloadDAO = new ReadPayloadDAO();
-        dataSource = HikariCPConfig.getDataSource();
         retrieveJournalEntryDAO = new RetrieveJournalEntryDAO();
-        factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(TradePayload.class).buildSessionFactory();
+        factory = HibernateConfig.getSessionFactory();
     }
 
     public static synchronized HibernatePayloadDAO getInstance(){
@@ -74,7 +68,7 @@ public class HibernatePayloadDAO implements PayloadDAO {
         }
     }
     public void close() {
-        factory.close();
+        HibernateConfig.shutdown();
     }
 
     public void updatePayload(String tradeId, String newStatus){
@@ -101,16 +95,6 @@ public class HibernatePayloadDAO implements PayloadDAO {
             if (session != null) {
                 session.close();
             }
-        }
-
-        String updateSQL = "UPDATE trade_payloads SET je_status = ? WHERE trade_id = ?";
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement updateStatement = connection.prepareStatement(updateSQL)) {
-            updateStatement.setString(1, newStatus);
-            updateStatement.setString(2, tradeId);
-            updateStatement.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("Error updating row: " + e.getMessage());
         }
     }
 

@@ -36,7 +36,7 @@ public class ChunkGeneratorService {
                     try {
                         writeChunkToFile(chunkData, index);
                     } catch (Exception e) {
-                        throw new RuntimeException("Error writing chunk: " + e);
+                        logger.warning("Error writing chunk: " + e);
                     }
                 });
             } catch (Exception e) {
@@ -48,7 +48,7 @@ public class ChunkGeneratorService {
             chunkGeneratorExecutorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS); // Wait for all tasks to complete
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Task interrupted: " + e.getMessage());
+            logger.warning("Task interrupted: " + e.getMessage());
         }
         return chunksDataFileNames;
     }
@@ -61,8 +61,8 @@ public class ChunkGeneratorService {
                 bufferedWriter.newLine();
             }
         }
-            synchronized (chunksDataFileNames){
-                chunksDataFileNames.add(chunkFileName);
-            }
+        synchronized (chunksDataFileNames){
+            chunksDataFileNames.add(chunkFileName);
+        }
     }
 }

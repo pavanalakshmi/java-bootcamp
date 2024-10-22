@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 public class Position {
     HikariDataSource dataSource;
@@ -20,28 +21,29 @@ public class Position {
     int maxRetryCount;
     private final Map<String, Integer> retryMap = new HashMap<>(); // for each account number
     private final LinkedBlockingQueue<String> deadLetterQueue = new LinkedBlockingQueue<>();
-    private static PositionsDAO positionsDAO;
-    private static ApplicationConfigProperties applicationConfigProperties;
+    private static final PositionsDAO positionsDAO = BeanFactory.getPositionsDAO();
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
+    Logger logger = Logger.getLogger(Position.class.getName());
 
     public Position() {
         dataSource = HikariCPConfig.getDataSource();
         retrievePositionsDataDAO = new RetrievePositionsDataDAO();
-        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         maxRetryCount = applicationConfigProperties.getMaxRetryAttempts();
-        positionsDAO = BeanFactory.getPositionsDAO();
     }
 
     void upsertPositions(Trade trade) throws SQLException, InterruptedException {
         if (retryMap.getOrDefault(trade.accountNumber(), 0) >= maxRetryCount) {
             deadLetterQueue.offer(trade.accountNumber());
-            System.out.println("Max retry attempts reached. Account moved to dead letter queue: " + trade.accountNumber());
+            logger.info("Max retry attempts reached. Account moved to dead letter queue: " + trade.accountNumber());
             return;
         }
         try(Connection connection = dataSource.getConnection()){
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             int retryCount = 0;
-            while (retryCount < maxRetryCount) {
+            boolean success = false;
+
+            while (!success && retryCount < maxRetryCount) {
                 try {
                     int version = retrievePositionsDataDAO.getVersionFromPositions(trade, connection);
                     int existingQuantity = retrievePositionsDataDAO.getQuantityFromPositions(trade, connection);
@@ -57,16 +59,16 @@ public class Position {
                     }
                     connection.commit();
                     retryMap.remove(trade.accountNumber());
-                    break;
+                    success = true;
                 } catch (Exception e) {
                     retryCount++;
                     retryMap.put(trade.accountNumber(), retryCount);
                     connection.rollback();
                     if (retryCount >= maxRetryCount) {
                         handleError(trade.accountNumber());
-                        break;
+                        success = true;
                     }
-                    System.out.println("Retrying due to error in upsert positions: " + e.getMessage());
+                    logger.warning("Retrying due to error in upsert positions: " + e.getMessage());
                 }
             }
         }
@@ -86,10 +88,12 @@ public class Position {
         if (retryCount < maxRetryCount) {
             retryCount++;
             retryMap.put(accountNumber, retryCount);
-            System.out.println("Retrying account: " + accountNumber + ", retry count: " + retryCount);
+            String retry = "Retrying account: " + accountNumber + ", retry count: " + retryCount;
+            logger.info(retry);
         } else {
             deadLetterQueue.put(accountNumber);
-            System.out.println("Account " + accountNumber + " added to dead letter queue");
+            String dlq = "Account " + accountNumber + " added to dead letter queue";
+            logger.info(dlq);
         }
     }
 }

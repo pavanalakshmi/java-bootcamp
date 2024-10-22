@@ -9,9 +9,11 @@ import org.pavani.multithreading.trading_multithreading.util.ApplicationConfigPr
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 public class MultiThreadTradeRunner {
-
+    static Logger logger = Logger.getLogger(MultiThreadTradeRunner.class.getName());
+    
     public static void main(String[] args) {
         ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
         String filePath = applicationConfigProperties.getFileName();
@@ -26,32 +28,36 @@ public class MultiThreadTradeRunner {
         ChunkProcessorService chunkProcessor = new ChunkProcessorService(chunkQueue, tradeDistributionQueueService);
         TradeProcessorService tradeProcessorService = new TradeProcessorService(tradeDistributionQueueService.getResultQueues());
 
+
         long startTime = System.currentTimeMillis();
 
         try {
             Thread chunkProcessorThread = new Thread(chunkProcessor::chunksProcessor);
             chunkProcessorThread.start();
-            System.out.println("Timestamp: "+ localDateTime.format(formatter));
-            System.out.println("Chunk Processor started >");
+            String time = "Timestamp: "+ localDateTime.format(formatter);
+            logger.info(time);
+            logger.info("Chunk Processor started >");
 
             Thread chunkGeneratorThread = new Thread(() -> readTradeFile.readCSVGenerateChunks(filePath));
             chunkGeneratorThread.start();
-            System.out.println("Chunk Generator started >");
+            logger.info("Chunk Generator started >");
             chunkGeneratorThread.join();
             chunkProcessorThread.join();
 
             Thread tradeProcessorThread = new Thread(tradeProcessorService::processTrade);
             tradeProcessorThread.start();
-            System.out.println("Trade Processor started >");
+            logger.info("Trade Processor started >");
             tradeProcessorThread.join();
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            e.printStackTrace();
+            String stackTrace = "Interrupted exception: " + e.getMessage();
+            logger.info(stackTrace);
         }
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime; // Duration in milliseconds
 
-        System.out.println("Total execution time: " + (duration*0.001) + " seconds");
+        String timeString = "Total execution time: " + (duration*0.001) + " seconds";
+        logger.info(timeString);
     }
 }

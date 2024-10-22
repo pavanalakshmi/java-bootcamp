@@ -8,16 +8,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 public class ReadTradeFile {
     public final int chunksCount;
     ChunkGeneratorService chunkGenerator;
     List<String> chunkFileNames;
     LinkedBlockingQueue<String> chunkQueue;
-    private static ApplicationConfigProperties applicationConfigProperties;
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
+    Logger logger = Logger.getLogger(ReadTradeFile.class.getName());
 
     public ReadTradeFile( LinkedBlockingQueue<String> chunkQueue ) {
-        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         chunksCount = applicationConfigProperties.getChunkSize();
         chunkGenerator = new ChunkGeneratorService();
         this.chunkQueue = chunkQueue;
@@ -38,11 +39,12 @@ public class ReadTradeFile {
                 try {
                     chunkQueue.put(chunkFileName);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException("Failed to add chunk to queue: "+e);
+                    Thread.currentThread().interrupt();
+                    logger.warning("Failed to add chunk to queue: "+e);
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("File read error: " + e.getMessage());
+            logger.warning("File read error: " + e.getMessage());
         }
     }
 }

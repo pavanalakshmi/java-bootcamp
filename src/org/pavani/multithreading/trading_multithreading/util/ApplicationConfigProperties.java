@@ -1,5 +1,6 @@
 package org.pavani.multithreading.trading_multithreading.util;
 
+import lombok.Getter;
 import org.pavani.multithreading.trading_multithreading.exception.ConfigFileReadException;
 
 import java.io.FileInputStream;
@@ -12,17 +13,29 @@ public class ApplicationConfigProperties {
     private static final String ERROR_MESSAGE = "Error while reading application.properties file";
     private static ApplicationConfigProperties instance;
 
+    @Getter
     private String fileName;
+    @Getter
     private int chunkSize;
+    @Getter
     private String dbUserName;
+    @Getter
     private String dbPasswords;
+    @Getter
     private String dbUrl;
+    @Getter
     private int maxRetryAttempts;
+    @Getter
     private int chunkProcessorThreadPoolSize;
+    @Getter
     private int tradeProcessorThreadPoolSize;
+    @Getter
     private int tradeProcessorQueueCount;
+    @Getter
     private String distributionLogicCriteria;
+    @Getter
     private String persistenceTechnology;
+    @Getter
     private String algorithm;
     private String useMap;
     private String useStoredProcedure;
@@ -63,55 +76,6 @@ public class ApplicationConfigProperties {
         } catch (IOException e) {
             throw new ConfigFileReadException(ERROR_MESSAGE+e.getMessage());
         }
-    }
-
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public int getChunkSize() {
-        return chunkSize;
-    }
-
-    public String getDbUserName() {
-        return dbUserName;
-    }
-
-    public String getDbPasswords() {
-        return dbPasswords;
-    }
-
-    public int getChunkProcessorThreadPoolSize() {
-        return chunkProcessorThreadPoolSize;
-    }
-
-    public int getTradeProcessorThreadPoolSize() {
-        return tradeProcessorThreadPoolSize;
-    }
-
-    public int getTradeProcessorQueueCount() {
-        return tradeProcessorQueueCount;
-    }
-
-    public String getDbUrl() {
-        return dbUrl;
-    }
-
-    public int getMaxRetryAttempts() {
-        return maxRetryAttempts;
-    }
-
-    public String getDistributionLogicCriteria() {
-        return distributionLogicCriteria;
-    }
-
-    public String getAlgorithm() {
-        return algorithm;
-    }
-
-    public String getPersistenceTechnology() {
-        return persistenceTechnology;
     }
 
     public Boolean getUseMap() {

@@ -11,6 +11,9 @@ import org.pavani.multithreading.trading_multithreading.dao.jdbc.JDBCPayloadDAO;
 import org.pavani.multithreading.trading_multithreading.dao.jdbc.JDBCPositionsDAO;
 import org.pavani.multithreading.trading_multithreading.exception.InvalidPersistenceTechnologyException;
 import org.pavani.multithreading.trading_multithreading.util.ApplicationConfigProperties;
+import org.pavani.multithreading.trading_multithreading.util.HibernateTransactionUtil;
+import org.pavani.multithreading.trading_multithreading.util.JDBCTransactionUtil;
+import org.pavani.multithreading.trading_multithreading.util.TransactionUtil;
 
 public class BeanFactory {
     private static ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
@@ -19,6 +22,16 @@ public class BeanFactory {
     private static final String HIBERNATE_PERSISTENCE_TECHNOLOGY = "hibernate";
     private static final String JDBC_PERSISTENCE_TECHNOLOGY = "jdbc";
     private static final String INVALID_PERSISTENCE_TECHNOLOGY = "Invalid persistence technology";
+
+    public static TransactionUtil getTransactionUtil(){
+        if(HIBERNATE_PERSISTENCE_TECHNOLOGY.equals(applicationConfigProperties.getPersistenceTechnology())){
+            return HibernateTransactionUtil.getInstance();
+        } else if (JDBC_PERSISTENCE_TECHNOLOGY.equals(applicationConfigProperties.getPersistenceTechnology())){
+            return JDBCTransactionUtil.getInstance();
+        } else{
+            throw new InvalidPersistenceTechnologyException(INVALID_PERSISTENCE_TECHNOLOGY);
+        }
+    }
 
     public static JournalEntryDAO getJournalEntryDAO(){
         if(HIBERNATE_PERSISTENCE_TECHNOLOGY.equals(applicationConfigProperties.getPersistenceTechnology())){

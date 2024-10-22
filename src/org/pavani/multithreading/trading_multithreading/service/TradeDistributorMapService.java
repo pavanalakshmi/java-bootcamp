@@ -1,5 +1,6 @@
 package org.pavani.multithreading.trading_multithreading.service;
 
+import lombok.Getter;
 import org.pavani.multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
 import java.io.BufferedReader;
@@ -10,23 +11,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 public class TradeDistributorMapService implements TradeDistributionMap {
+    @Getter
     ConcurrentMap<String, String> tradeMap;
-    private Random random;
+    private final Random random;
     private int queueIndex;
-    private static ApplicationConfigProperties applicationConfigProperties;
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
     private final List<String> listOfQueues;
-
-    public ConcurrentMap<String, String> getTradeMap() {
-        return tradeMap;
-    }
+    Logger logger = Logger.getLogger(TradeDistributorMapService.class.getName());
 
     public TradeDistributorMapService() {
         tradeMap = new ConcurrentHashMap<>();
         listOfQueues = new ArrayList<>();
         random = new Random();
-        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         int queueCount = applicationConfigProperties.getTradeProcessorQueueCount();
         queueIndex=1;
         for(int i=1;i<=queueCount;i++){
@@ -49,10 +48,9 @@ public class TradeDistributorMapService implements TradeDistributionMap {
                         tradeMap.put(tradeId, randomQueue);
                     }
                 }
-//                System.out.println(tradeMap.size()); // since all tradeIds is unique
             }
         } catch (IOException e) {
-            System.out.println("Error while reading file in distributeMap: "+e.getMessage());
+            logger.info("Error while reading file in distributeMap: "+e.getMessage());
         }
     }
 
@@ -73,7 +71,7 @@ public class TradeDistributorMapService implements TradeDistributionMap {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error while reading file in distributeMap: "+e.getMessage());
+            logger.info("Error while reading file in distributeMap: "+e.getMessage());
         }
     }
 

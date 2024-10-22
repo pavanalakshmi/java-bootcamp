@@ -13,79 +13,84 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class ChunkProcessorService implements ChunkProcessor {
     private final ExecutorService chunkProcessorExecutorService;
     HikariDataSource dataSource;
     TradeDistributorMapService tradeDistributorMap;
     TradeDistributionQueueService tradeDistributionQueue;
-    private static ApplicationConfigProperties applicationConfigProperties;
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
     private final LinkedBlockingQueue<String> chunkQueue;
-    private static PayloadDAO payloadDAO;
+    private static final PayloadDAO payloadDAO = BeanFactory.getPayloadDAO();
+    Logger logger = Logger.getLogger(ChunkProcessorService.class.getName());
 
     public ChunkProcessorService(LinkedBlockingQueue<String> chunkQueue, TradeDistributionQueueService tradeDistributionQueueService) {
         this.chunkQueue = chunkQueue;
-        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         chunkProcessorExecutorService = Executors.newFixedThreadPool(applicationConfigProperties.getChunkProcessorThreadPoolSize()); // Create a thread pool of size 10
         dataSource = HikariCPConfig.getDataSource();
         tradeDistributorMap = new TradeDistributorMapService();
         this.tradeDistributionQueue = tradeDistributionQueueService;
-        payloadDAO = BeanFactory.getPayloadDAO();
     }
 
     public void chunksProcessor() {
         try {
             int emptyPollCount = 0;
             int maxEmptyPolls = 5;
-            String criteria = applicationConfigProperties.getDistributionLogicCriteria();
-
             while (true){
                 String file = chunkQueue.poll(500, TimeUnit.MILLISECONDS);
                 if(file==null){
                     emptyPollCount++;
                     if (emptyPollCount >= maxEmptyPolls) {
-                        System.out.println("No more files to process, exiting...");
+                        logger.info("No more files to process, exiting...");
                         break;
                     }
                     continue;
                 }
-                emptyPollCount = 0;
-                chunkProcessorExecutorService.submit(() -> {
-                    try {
-                        processChunk(file);
-                        if(applicationConfigProperties.getUseMap()){
-                            if(criteria.equals("tradeId")){ //10k
-                                tradeDistributorMap.distributeMapWithTradeId(file); // size - 9992
-                            } else if (criteria.equals("accountNumber")) {  // 9992
-                                tradeDistributorMap.distributeMapWithAccountNumber(file);
-                            }
-                            tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
-                        } else{
-                            tradeDistributionQueue.distributeQueueWithoutMap(file);
-                        }
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                    emptyPollCount = 0;
+                    submitFileProcessingTask(file);
             }
         } catch (Exception e) {
-            System.out.println("Error in chunk processor: " + e.getMessage());
-            e.printStackTrace();
+            logger.info("Error in chunk processor: " + e.getMessage());
         }
         finally {
             chunkProcessorExecutorService.shutdown();
             try {
                 if (!chunkProcessorExecutorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
-                        chunkProcessorExecutorService.shutdownNow();
+                    chunkProcessorExecutorService.shutdownNow();
                 }
             } catch (InterruptedException e) {
                 chunkProcessorExecutorService.shutdownNow();
                 Thread.currentThread().interrupt();
             }
-                if (dataSource != null && !dataSource.isClosed()) {
-                    dataSource.close();
-                }
+            if (dataSource != null && !dataSource.isClosed()) {
+                dataSource.close();
+            }
+        }
+    }
+
+    private void submitFileProcessingTask(String file) {
+        chunkProcessorExecutorService.submit(() -> {
+            try {
+                processChunk(file);
+                distributeFileBasedOnCriteria(file);
+            } catch (IOException e) {
+                logger.info("Exception occurred in chunks processor");
+            }
+        });
+    }
+
+    private void distributeFileBasedOnCriteria(String file) {
+        String criteria = applicationConfigProperties.getDistributionLogicCriteria();
+        if(Boolean.TRUE.equals(applicationConfigProperties.getUseMap())){
+            if(criteria.equals("tradeId")){ //10k
+                tradeDistributorMap.distributeMapWithTradeId(file); // size - 9992
+            } else if (criteria.equals("accountNumber")) {  // 9992
+                tradeDistributorMap.distributeMapWithAccountNumber(file);
+            }
+            tradeDistributionQueue.distributeQueue(file, tradeDistributorMap.getTradeMap());
+        } else{
+            tradeDistributionQueue.distributeQueueWithoutMap(file);
         }
     }
 

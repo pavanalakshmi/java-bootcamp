@@ -14,6 +14,7 @@ public class ReadPayloadDAO {
     public String readPayload(String tradeId) {
         String payloadString;
         String selectSQL = "SELECT payload FROM trade_payloads where trade_id = ?";
+//        try (Connection connection = JDBCTransactionUtil.getInstance().getConnection();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStatement = connection.prepareStatement(selectSQL)) {
             selectStatement.setString(1, tradeId);
@@ -32,6 +33,7 @@ public class ReadPayloadDAO {
 
     public boolean isValidCUSIPSymbol(String cusip) {
         String selectSQL = "SELECT symbol FROM SecuritiesReference where symbol = ?";
+//        try (Connection connection = JDBCTransactionUtil.getInstance().getConnection();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStatement = connection.prepareStatement(selectSQL)){
             selectStatement.setString(1,cusip);
@@ -46,7 +48,7 @@ public class ReadPayloadDAO {
         }
     }
 
-    public boolean isValidCUSIPSymbolHibernate(String cusip) {  // -----Update
+    public boolean isValidCUSIPSymbolHibernate(String cusip) {  // TODO --
         String selectSQL = "SELECT symbol FROM SecuritiesReference where symbol = ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement selectStatement = connection.prepareStatement(selectSQL)){

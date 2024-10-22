@@ -1,17 +1,18 @@
 package org.pavani.multithreading.trading_multithreading.dao.jdbc;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.pavani.multithreading.trading_multithreading.config.HikariCPConfig;
 import org.pavani.multithreading.trading_multithreading.dao.PayloadDAO;
 import org.pavani.multithreading.trading_multithreading.dao.ReadPayloadDAO;
 import org.pavani.multithreading.trading_multithreading.dao.RetrieveJournalEntryDAO;
 import org.pavani.multithreading.trading_multithreading.service.TradePayload;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public class JDBCPayloadDAO implements PayloadDAO {
     HikariDataSource dataSource;
@@ -20,6 +21,7 @@ public class JDBCPayloadDAO implements PayloadDAO {
     String insertSQL = "INSERT INTO trade_payloads(trade_id, validity_status, payload, lookup_status, je_status) VALUES (?,?,?,?,?)";
     SessionFactory factory;
     private static JDBCPayloadDAO instance;
+    Logger logger = Logger.getLogger(JDBCPayloadDAO.class.getName());
 
     public JDBCPayloadDAO() {
         readPayloadDAO = new ReadPayloadDAO();
@@ -42,6 +44,7 @@ public class JDBCPayloadDAO implements PayloadDAO {
         String lookUpStatus = validCusip ? "pass" : "fail";
         boolean journalEntryStatus = retrieveJournalEntryDAO.isJournalEntryExist(data[2], data[3]);
         String jeStatus = journalEntryStatus ? "posted" : "not_posted";
+
         try (Connection connection = dataSource.getConnection();
              PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
             insertStatement.setString(1, data[0]);
@@ -51,19 +54,22 @@ public class JDBCPayloadDAO implements PayloadDAO {
             insertStatement.setString(5, jeStatus);
             insertStatement.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Error processing row: " + e.getMessage());
+            logger.warning("Error processing row: " + e.getMessage());
         }
     }
 
     public void updatePayload(String tradeId, String newStatus){
         String updateSQL = "UPDATE trade_payloads SET je_status = ? WHERE trade_id = ?";
+//        try (Connection connection = JDBCTransactionUtil.getInstance().getConnection();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement updateStatement = connection.prepareStatement(updateSQL)) {
+//            JDBCTransactionUtil.getInstance().startTransaction();
             updateStatement.setString(1, newStatus);
             updateStatement.setString(2, tradeId);
             updateStatement.executeUpdate();
+//            JDBCTransactionUtil.getInstance().commitTransaction();
         } catch (SQLException e) {
-            System.out.println("Error updating row: " + e.getMessage());
+            logger.warning("Error updating row: " + e.getMessage());
         }
     }
 

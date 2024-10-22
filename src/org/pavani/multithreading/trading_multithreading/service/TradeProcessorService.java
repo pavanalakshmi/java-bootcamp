@@ -13,75 +13,86 @@ import org.pavani.multithreading.trading_multithreading.factory.BeanFactory;
 import org.pavani.multithreading.trading_multithreading.model.Trade;
 import org.pavani.multithreading.trading_multithreading.util.ApplicationConfigProperties;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class TradeProcessorService implements TradeProcessor {
-    private final ExecutorService executor;
+    private final ExecutorService tradeProcessorExecutor;
+    private static final JournalEntryDAO journalEntryDAO = BeanFactory.getJournalEntryDAO();
+    private static final ApplicationConfigProperties applicationConfigProperties = ApplicationConfigProperties.getInstance();
+    private final Map<String, Integer> retryMap;
+    private final LinkedBlockingQueue<String> deadLetterQueue;
+    private static final String EXCHANGE_NAME = "trade_MQ";
     HikariDataSource dataSource;
     Position position;
     ReadPayloadDAO readPayloadDAO;
-    private static JournalEntryDAO journalEntryDAO;
-    private static ApplicationConfigProperties applicationConfigProperties;
     Map<String, LinkedBlockingQueue<String>> map;
-    int queueCount;
-    int maxRetryCount;
-    private final Map<String, Integer> retryMap;
-    private final LinkedBlockingQueue<String> deadLetterQueue;
     ConnectionFactory factory;
     RabbitMQConfig rabbitMQConfig;
-    private final static String EXCHANGE_NAME = "trade_MQ";
+    Logger logger = Logger.getLogger(TradeProcessorService.class.getName());
+    int queueCount;
+    int maxRetryCount;
 
     public TradeProcessorService(Map<String, LinkedBlockingQueue<String>> queuesMap) {
         dataSource = HikariCPConfig.getDataSource();
         position = new Position();
         readPayloadDAO = new ReadPayloadDAO();
-        applicationConfigProperties = ApplicationConfigProperties.getInstance();
         queueCount = applicationConfigProperties.getTradeProcessorQueueCount();
         map = queuesMap;
-        executor = Executors.newFixedThreadPool(applicationConfigProperties.getTradeProcessorThreadPoolSize());
+        tradeProcessorExecutor = Executors.newFixedThreadPool(applicationConfigProperties.getTradeProcessorThreadPoolSize());
         maxRetryCount = applicationConfigProperties.getMaxRetryAttempts();
         retryMap = new ConcurrentHashMap<>();
         deadLetterQueue = new LinkedBlockingQueue<>();
         rabbitMQConfig = new RabbitMQConfig();
         factory = rabbitMQConfig.connect();
-        journalEntryDAO = BeanFactory.getJournalEntryDAO();
     }
 
     public void processTrade() {
-        if (applicationConfigProperties.getUseRabbitMQ()) {
+        if (Boolean.TRUE.equals(applicationConfigProperties.getUseRabbitMQ())) {
             processRabbitMQLogic();
         } else {
-            for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
-                LinkedBlockingQueue<String> queue = entry.getValue();
-                executor.submit(() -> {
-                    try {
-                        if (applicationConfigProperties.getUseStoredProcedure()){
-                            processTradeQueue(queue);
-                        } else{
-                            processTradeQueueWithoutStoredProcedure(queue);
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
-                    executor.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executor.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
+            processTradeQueues();
+            shutdownExecutor();
         }
+    }
+
+    private void shutdownExecutor() {
+        tradeProcessorExecutor.shutdown();
+        try {
+            if (!tradeProcessorExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+                tradeProcessorExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            tradeProcessorExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void processTradeQueues() {
+        for (Map.Entry<String, LinkedBlockingQueue<String>> entry : map.entrySet()) {
+            LinkedBlockingQueue<String> queue = entry.getValue();
+            tradeProcessorExecutor.submit(() -> {
+                try {
+                    if (Boolean.TRUE.equals(applicationConfigProperties.getUseStoredProcedure())){
+                        processTradeQueue(queue);
+                    } else{
+                        processTradeQueueWithoutStoredProcedure(queue);
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (SQLException e) {
+                    String output = "error while submitting tradeProcessorExecutor service";
+                    logger.info(output);
+                }
+            });
+        }
+
     }
 
     public void processRabbitMQLogic() {
@@ -93,26 +104,31 @@ public class TradeProcessorService implements TradeProcessor {
             consumerFuture = executorService.submit(consumerTask);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutdown signal received. Stopping consumer...");
+            logger.info("Shutdown signal received. Stopping consumer...");
             executorService.shutdownNow();
             try {
                 if (!executorService.isTerminated()) {
-                    executorService.awaitTermination(5, TimeUnit.SECONDS);
+                    boolean terminated = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                    if(!terminated){
+                        logger.info("ExecutorService did not terminate within the specified timeout.");
+                        executorService.shutdownNow();
+                    }
                 }
             } catch (InterruptedException e) {
-                System.out.println("Shutdown interrupted.");
+                logger.info("Shutdown interrupted.");
                 Thread.currentThread().interrupt();
             }
-            System.out.println("Consumer stopped.");
+            logger.info("Consumer stopped.");
         }));
 
-        try {
-            consumerFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Exception while waiting for consumer to finish: " + e.getMessage());
+        if(consumerFuture!=null){
+            try {
+                consumerFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+                logger.info("Exception while waiting for consumer to finish: " + e.getMessage());
+            }
         }
-
     }
 
     private void processTradeQueue(LinkedBlockingQueue<String> queue) throws InterruptedException {
@@ -155,26 +171,32 @@ public class TradeProcessorService implements TradeProcessor {
                 callableStatement.registerOutParameter(6, Types.VARCHAR);
                 callableStatement.execute();
                 String statusCode = callableStatement.getString(6);
-                System.out.println("Stored procedure result: " + statusCode);
+                String storedProcedureMsg = "Stored procedure result: " + statusCode;
+                logger.info(storedProcedureMsg);
 
                 switch (statusCode) {
                     case "POSITION_UPDATE_DONE":
-                        System.out.println("Trade successfully processed: " + tradeId);
+                        String successOutput = "Trade successfully processed: " + tradeId;
+                        logger.info(successOutput);
                         break;
                     case "POSITION_INSERT_FAILED":
-                        System.out.println("Trade Position Insert Failed : " + tradeId);
+                        String failedOutput = "Trade Position Insert Failed : " + tradeId;
+                        logger.info(failedOutput);
                         break;
                     case "JE_INSERT_FAILED", "POSITION_UPDATE_FAILED_OPTIMISTIC_LOCKING":
                         retryOrDeadLetterQueue(statusCode, accountNumber, tradeId);
                         break;
                     default:
-                        throw new RuntimeException("Unexpected status from SP: " + statusCode);
+                        String defaultMsg = "Unexpected status from SP: " + statusCode;
+                        logger.info(defaultMsg);
                 }
             } else {
-                System.out.println("Invalid CUSIP: " + cusip);
+                String printMsg = "Invalid CUSIP: " + cusip;
+                logger.info(printMsg);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            String exceptionMsg = "Exception in connection";
+            logger.info(exceptionMsg);
         }
     }
 
@@ -183,27 +205,29 @@ public class TradeProcessorService implements TradeProcessor {
         if (retryCount < maxRetryCount) {
             retryCount++;
             retryMap.put(accountNumber, retryCount);
-            System.out.println("Retrying trade: " + tradeId + " due to " + statusCode);
+            String outputMessage = "Retrying trade: " + tradeId + " due to " + statusCode;
+            logger.info(outputMessage);
         } else {
-            System.err.println("Max retries reached for trade: " + tradeId + ", sending to DLQ");
+            String outputMsg = "Max retries reached for trade: " + tradeId + ", sending to DLQ";
+            logger.info(outputMsg);
             if (!deadLetterQueue.offer(tradeId)) {
-                System.err.println("Failed to add trade to DLQ: " + tradeId);
+                String dlqMsg = "Failed to add trade to DLQ: " + tradeId;
+                logger.info(dlqMsg);
             }
         }
     }
 
     private void processTradeQueueWithoutStoredProcedure(LinkedBlockingQueue<String> queue) throws InterruptedException, SQLException {
         String tradeId;
-        String cusip;
-        while ((tradeId = queue.poll(2, TimeUnit.SECONDS)) != null) {
+        while ((tradeId = queue.poll(500, TimeUnit.MILLISECONDS)) != null) {
             if (tradeId.equals("END")) {
                 return;
             }
             String payload = readPayloadDAO.readPayload(tradeId);
             String[] payloadData = payload.split(",");
             Trade trade = new Trade(payloadData[2], payloadData[3], payloadData[4], Integer.parseInt(payloadData[5]), tradeId);
-            cusip = trade.cusip();
-            if (readPayloadDAO.isValidCUSIPSymbol(cusip)) {
+
+            if (readPayloadDAO.isValidCUSIPSymbol(trade.cusip())) {
                 journalEntryDAO.insertToJournalEntry(trade);
                 position.upsertPositions(trade);
             }
@@ -222,11 +246,13 @@ public class TradeProcessorService implements TradeProcessor {
                 channel.exchangeDeclare(EXCHANGE_NAME, "direct");
                 channel.queueDeclare(queueName, true, false, false, null);
                 channel.queueBind(queueName, EXCHANGE_NAME, queueName);
-                System.out.println(" [*] Waiting for messages in '" + queueName + "'.");
+                String msg = " [*] Waiting for messages in '" + queueName + "'.";
+                logger.info(msg);
 
                 DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                    String message = new String(delivery.getBody(), "UTF-8");
-                    System.out.println(" [x] Received '" + message + "'");
+                    String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                    String out = " [x] Received '"+ message + "'";
+                    logger.info(out);
                     String tradeId = message.trim();
                     executeTrade(tradeId);
                 };
@@ -234,13 +260,16 @@ public class TradeProcessorService implements TradeProcessor {
                 };
                 channel.basicConsume(queueName, true, deliverCallback, cancelCallback);
 
-                while (!Thread.currentThread().isInterrupted()) {
-                    Thread.sleep(1000); // Keep checking every second
+                synchronized (this){
+                    while (!Thread.currentThread().isInterrupted()) {
+                        try{
+                            wait(1000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            logger.info("Consumer interrupted, shutting down...");
+                        }
+                    }
                 }
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Consumer interrupted, shutting down...");
             }
             return null;
         }

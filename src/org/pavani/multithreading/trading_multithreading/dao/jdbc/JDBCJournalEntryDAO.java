@@ -14,11 +14,10 @@ import java.sql.SQLException;
 public class JDBCJournalEntryDAO implements JournalEntryDAO {
     HikariDataSource dataSource;
     private static JDBCJournalEntryDAO instance;
-    private static PayloadDAO payloadDAO;
+    private static final PayloadDAO payloadDAO = BeanFactory.getPayloadDAO();
 
     private JDBCJournalEntryDAO() {
         dataSource = HikariCPConfig.getDataSource();
-        payloadDAO = BeanFactory.getPayloadDAO();
     }
 
     public static synchronized JDBCJournalEntryDAO getInstance(){
@@ -29,9 +28,12 @@ public class JDBCJournalEntryDAO implements JournalEntryDAO {
     }
 
     public void insertToJournalEntry(Trade trade) {
-        String insertSQL = "INSERT INTO journal_entry VALUES (?,?,?,?,?)"; //total 9029
+
+        String insertSQL = "INSERT INTO journal_entry (account_number, CUSIP, direction, quantity, posted_status) VALUES (?,?,?,?,?)"; //total 9029
+//        try (Connection connection = JDBCTransactionUtil.getInstance().getConnection();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement insertStatement = connection.prepareStatement(insertSQL)) {
+//            JDBCTransactionUtil.getInstance().startTransaction();
             insertStatement.setString(1, trade.accountNumber());
             insertStatement.setString(2, trade.cusip());
             insertStatement.setString(3, trade.direction());
@@ -41,7 +43,9 @@ public class JDBCJournalEntryDAO implements JournalEntryDAO {
             if (rowInserted > 0) {
                 payloadDAO.updatePayload(trade.tradeId(), "posted");
             }
+//            JDBCTransactionUtil.getInstance().commitTransaction();
         } catch (SQLException e) {
+//            JDBCTransactionUtil.getInstance().rollbackTransaction();
             throw new RuntimeException(e);
         }
     }
